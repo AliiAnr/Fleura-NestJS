@@ -20,7 +20,7 @@ export class Buyer {
   @Column({ unique: true })
   email: string;
 
-  @Column({ unique: true })
+  @Column({nullable: true})
   phone: string;
 
   @Column({ nullable: true })
@@ -36,6 +36,6 @@ export class Buyer {
   @Column({ default: 0 })
   point: number;
 
-  // @Column({ type: 'timestamp', nullable: true })
-  // verified_at: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  verified_at: Date;
 }

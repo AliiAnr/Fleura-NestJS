@@ -33,7 +33,7 @@ export class Seller {
   @Column()
   identity_picture: string;
 
-  @Column({ unique: true })
+  @Column({nullable: true})
   phone: string;
 
   @Column({ nullable: true })
@@ -46,6 +46,6 @@ export class Seller {
   })
   otp: OtpBuyer;
 
-  // @Column({ type: 'timestamp', nullable: true })
-  // verified_at: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  verified_at: Date;
 }

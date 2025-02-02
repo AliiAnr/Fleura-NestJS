@@ -8,6 +8,9 @@ import { OtpBuyer } from "./auth/entity/otp.buyer.entity";
 import { OtpSeller } from "./auth/entity/otp.seller.entity";
 import { Buyer } from "./buyer/entity/buyer.entity";
 import { Seller } from "./seller/entity/seller.entity";
+import { MailerModule } from "@nestjs-modules/mailer";
+import * as path from 'path';
+import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 
 @Module({
   imports: [
@@ -28,6 +31,33 @@ import { Seller } from "./seller/entity/seller.entity";
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };
       },
+      inject: [ConfigService],
+    }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          service: configService.get<string>('SMTP_SERVICE'),
+          host: configService.get<string>('SMTP_HOST'),
+          port: configService.get<number>('SMTP_PORT'),
+          secure: configService.get<boolean>('SMTP_SECURE'),
+          auth: {
+            user: configService.get<string>('SMTP_USER'),
+            pass: configService.get<string>('SMTP_PASS'),
+          },
+          debug: true,
+        },
+        defaults: {
+          from: configService.get<string>('DEFAULT_FROM'),
+        },
+        template: {
+          dir: path.join(__dirname, '../src/auth/template'),
+          adapter: new PugAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
       inject: [ConfigService],
     }),
     AuthModule,

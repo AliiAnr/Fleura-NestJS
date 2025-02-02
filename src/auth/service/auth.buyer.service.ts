@@ -9,7 +9,7 @@ import { LoginGoogleDto } from '../dto/login-google.dto';
 import { Buyer } from 'src/buyer/entity/buyer.entity';
 
 @Injectable()
-export class AuthService {
+export class AuthBuyerService {
   constructor(
     @InjectRepository(Buyer) private readonly userRepository: Repository<Buyer>,
     @Inject('JwtLoginService') private jwtLoginService: JwtService,
@@ -47,14 +47,18 @@ export class AuthService {
     try {
       let user = await this.userRepository.findOneBy({ email: details.email });
       if (user) {
+        user.verified_at = new Date();
         await this.userRepository.save(user);
         console.log('User found and verified:', user.email);
       } else {
         console.log('User not found. Creating new user...');
+        // console.log('Details:', details);
         user = this.userRepository.create({
           email: details.email,
           name: details.name,
+          verified_at: new Date(),
         });
+        console.log(user)
         user = await this.userRepository.save(user);
         console.log('New user created and verified:', user.email);
       }

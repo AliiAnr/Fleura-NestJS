@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { AuthService } from "./service/auth.service";
+import { AuthBuyerService } from "./service/auth.buyer.service";
 import { AuthBuyerController } from "./controller/auth.buyer.controller";
 import { AuthSellerController } from "./controller/auth.seller.controller";
 import { ConfigModule } from "@nestjs/config";
@@ -17,6 +17,7 @@ import { LocalStrategy } from "./jwt/strategies/local.strategy";
 import { JwtLoginStrategy } from "./jwt/strategies/jwt.strategy";
 import { JwtForgotStrategy } from "./jwt/strategies/jwt-forgot.strategy";
 import { GoogleStrategy } from "./google/google.strategy";
+import { OtpBuyerService } from "./service/otp.buyer.service";
 
 @Module({
   imports: [
@@ -30,10 +31,10 @@ import { GoogleStrategy } from "./google/google.strategy";
   ],
   providers: [
     {
-      provide: "AUTH_SERVICE",
-      useClass: AuthService,
+      provide: "AUTH_BUYER_SERVICE",
+      useClass: AuthBuyerService,
     },
-    // OtpService,
+    OtpBuyerService,
     LocalStrategy,
     JwtLoginStrategy,
     JwtForgotStrategy,

@@ -8,13 +8,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { validateOrReject } from 'class-validator';
-import { AuthService } from 'src/auth/service/auth.service';
 import { LoginAuthDto } from 'src/auth/dto/login-auth.dto';
+import { AuthBuyerService } from 'src/auth/service/auth.buyer.service';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(
-    @Inject('AUTH_SERVICE') private readonly authService: AuthService,
+    @Inject('AUTH_BUYER_SERVICE') private readonly authService: AuthBuyerService,
   ) {
     super({
       usernameField: 'email',
