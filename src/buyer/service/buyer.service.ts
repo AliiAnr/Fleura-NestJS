@@ -11,7 +11,7 @@ import { Buyer } from "../entity/buyer.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
-import { RegisterUserDto } from "../dto/register-user.dto";
+import { RegisterBuyerDto } from "../dto/register-buyer.dto";
 
 @Injectable()
 export class BuyerService {
@@ -21,7 +21,7 @@ export class BuyerService {
     @InjectRepository(Buyer) private readonly userRepository: Repository<Buyer>
   ) {}
 
-  async createUser(request: RegisterUserDto): Promise<Buyer> {
+  async createUser(request: RegisterBuyerDto): Promise<Buyer> {
     try {
       await this.validateCreateUserRequest(request);
       const user = this.userRepository.create({
@@ -37,7 +37,7 @@ export class BuyerService {
       throw new Error("Failed to create user.");
     }
   }
-  private async validateCreateUserRequest(request: RegisterUserDto) {
+  private async validateCreateUserRequest(request: RegisterBuyerDto) {
     try {
       const user = await this.userRepository.findOne({
         where: { email: request.email },

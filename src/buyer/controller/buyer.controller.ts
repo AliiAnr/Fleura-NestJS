@@ -1,6 +1,6 @@
 import { Body, Controller, HttpStatus, Post, Req, UnprocessableEntityException, UseGuards } from "@nestjs/common";
 import { BuyerService } from "../service/buyer.service";
-import { RegisterUserDto } from "../dto/register-user.dto";
+import { RegisterBuyerDto } from "../dto/register-buyer.dto";
 import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
 import { JwtForgotAuthGuard } from "src/auth/jwt/guards/jwt-forgot.guard";
 import { RoleGuard } from "src/auth/jwt/guards/roles.guard";
@@ -12,7 +12,7 @@ export class BuyerController {
 
   @Post("register")
   async registerUser(
-    @Body() request: RegisterUserDto
+    @Body() request: RegisterBuyerDto
   ): Promise<ResponseWrapper<any>> {
     try {
       const user = await this.userService.createUser(request);
