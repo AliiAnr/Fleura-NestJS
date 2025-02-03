@@ -8,6 +8,7 @@ export class LocalGuard extends AuthGuard('local') {
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     // console.log('Hello, World');
+    // console.log("LocalAuthGuard Context:", context);
     return super.canActivate(context);
   }
 }

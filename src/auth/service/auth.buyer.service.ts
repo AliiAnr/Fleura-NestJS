@@ -16,10 +16,12 @@ export class AuthBuyerService {
     @Inject('JwtForgotService') private jwtForgotService: JwtService,
   ) {}
 
-  async validateUser({ email, password }: LoginAuthDto): Promise<string> {
+  async validateUser({ email, password }: LoginAuthDto): Promise<any> {
     const findUser = await this.userRepository.findOne({
       where: { email },
     });
+    // console.log(findUser);
+    // console.log(password)
     if (!findUser) {
       throw new UnauthorizedException('User not found');
     }
@@ -27,10 +29,16 @@ export class AuthBuyerService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Wrong Password');
     }
-    const { id, email: userEmail } = findUser;
-    const accessToken = this.jwtLoginService.sign({ id, email: userEmail });
+    return findUser;
+    // const { id, email: userEmail } = findUser;
+    // const accessToken = this.jwtLoginService.sign({ id, email: userEmail, role: 'buyer' });
 
-    return accessToken;
+    // return accessToken;
+  }
+  async login(user: any): Promise<string> {
+    const payload = { id: user.id, email: user.email, role: 'buyer' };
+    // console.log('Payload:', payload);
+    return this.jwtLoginService.sign(payload)
   }
 
   // async generateForgotPasswordToken(email: string): Promise<string> {
@@ -65,6 +73,7 @@ export class AuthBuyerService {
       const access_token = this.jwtLoginService.sign({
         id: user.id,
         email: user.email,
+        role: 'buyer',
       });
       return access_token;
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
