@@ -42,19 +42,19 @@ export class AuthBuyerController {
     });
   }
 
-  // @Get("tesRole")
-  // @UseGuards(JwtLoginAuthGuard,RoleGuard)
-  // @Roles('buyer')
-  // async tesRole(@Req() req: any): Promise<ResponseWrapper<any>> {
-  //   // console.log(req.originalUrl)
-  //   // console.log(req.user)
-  //   // console.log(req.baseUrl)
-  //   // console.log(req.url)
+  @Get("tesRole")
+  @UseGuards(JwtLoginAuthGuard,RoleGuard)
+  @Roles('buyer')
+  async tesRole(@Req() req: any): Promise<ResponseWrapper<any>> {
+    // console.log(req.originalUrl)
+    // console.log(req.user)
+    // console.log(req.baseUrl)
+    // console.log(req.url)
 
-  //   return new ResponseWrapper(HttpStatus.OK, "Login Successful", {
-  //     role: req.user.role
-  //   });
-  // }
+    return new ResponseWrapper(HttpStatus.OK, "Login Successful", {
+      role: req.user.role
+    });
+  }
 
   @Get("google/login")
   @UseGuards(GoogleAuthGuard)
@@ -62,7 +62,7 @@ export class AuthBuyerController {
     return { msg: "Google Authentication" };
   }
 
-  @Post("otp/forgot")
+  @Post("otp/password/verify")
   async verifyOtpForgot(
     @Body() body: { otpCode: string; email: string }
   ): Promise<ResponseWrapper<any>> {
@@ -72,7 +72,7 @@ export class AuthBuyerController {
     );
     return new ResponseWrapper(
       HttpStatus.OK,
-      "OTP has been generated successfully.",
+      "OTP verification successful",
       {
         access_token,
       }

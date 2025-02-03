@@ -122,7 +122,7 @@ import { OtpBuyer } from '../entity/otp.buyer.entity';
       await this.otpRepository.delete(otp.id);
       console.log('OTP verification successful');
   
-      const payload = { id: otp.buyerId, email: email };
+      const payload = { id: otp.buyerId, email: email, role: 'buyer' };
       const access_token = await this.jwtForgotService.sign(payload);
       return access_token;
     }

@@ -1,10 +1,16 @@
-import { Inject, Injectable, UnprocessableEntityException } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { OtpBuyerService } from "src/auth/service/otp.buyer.service";
 import { Buyer } from "../entity/buyer.entity";
 import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from "bcrypt";
 import { RegisterUserDto } from "../dto/register-user.dto";
 
 @Injectable()
@@ -49,6 +55,20 @@ export class BuyerService {
 
       console.log("error: Unexpected error");
       throw new Error("Error validating user request.");
+    }
+  }
+  async resetPassword(userId, newPassword): Promise<Buyer> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await this.userRepository.save(user);
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
   }
 }

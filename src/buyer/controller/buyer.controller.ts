@@ -1,7 +1,10 @@
-import { Body, Controller, HttpStatus, Post, UnprocessableEntityException } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, Req, UnprocessableEntityException, UseGuards } from "@nestjs/common";
 import { BuyerService } from "../service/buyer.service";
 import { RegisterUserDto } from "../dto/register-user.dto";
 import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
+import { JwtForgotAuthGuard } from "src/auth/jwt/guards/jwt-forgot.guard";
+import { RoleGuard } from "src/auth/jwt/guards/roles.guard";
+import { Roles } from "src/auth/jwt/decorators/roles.decorator";
 
 @Controller("buyer")
 export class BuyerController {
@@ -31,5 +34,16 @@ export class BuyerController {
         "Registration failed"
       );
     }
+  }
+
+  @Post('password/reset')
+  @UseGuards(JwtForgotAuthGuard,RoleGuard)
+  @Roles('buyer')
+  async resetPassword(
+    @Req() req: any,
+    @Body() body: { newPassword: string },
+  ): Promise<ResponseWrapper<any>> {
+    await this.userService.resetPassword(req.user.id, body.newPassword);
+    return new ResponseWrapper(HttpStatus.OK, 'Password Change Successful');
   }
 }
