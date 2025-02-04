@@ -37,6 +37,26 @@ export class BuyerService {
       throw new Error("Failed to create user.");
     }
   }
+
+  async updateUserName(userId, name): Promise<Buyer> {
+    try {
+      const userSameName = await this.userRepository.findOne({
+        where: { name: name },
+      });
+      if(userSameName){
+        throw new UnprocessableEntityException("Username already exists.");
+      }
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+      user.name = name;
+      await this.userRepository.save(user);
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
   private async validateCreateUserRequest(request: RegisterBuyerDto) {
     try {
       const user = await this.userRepository.findOne({

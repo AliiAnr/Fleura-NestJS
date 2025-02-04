@@ -1,10 +1,11 @@
-import { Body, Controller, HttpStatus, Post, Req, UnprocessableEntityException, UseGuards } from "@nestjs/common";
+import { Body, Controller, HttpStatus, Post, Put, Req, UnprocessableEntityException, UseGuards } from "@nestjs/common";
 import { BuyerService } from "../service/buyer.service";
 import { RegisterBuyerDto } from "../dto/register-buyer.dto";
 import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
 import { JwtForgotAuthGuard } from "src/auth/jwt/guards/jwt-forgot.guard";
 import { RoleGuard } from "src/auth/jwt/guards/roles.guard";
 import { Roles } from "src/auth/jwt/decorators/roles.decorator";
+import { JwtLoginAuthGuard } from "src/auth/jwt/guards/jwt.guard";
 
 @Controller("buyer")
 export class BuyerController {
@@ -34,6 +35,17 @@ export class BuyerController {
         "Registration failed"
       );
     }
+  }
+
+  @Put("username")
+  @UseGuards(JwtLoginAuthGuard,RoleGuard)
+  @Roles('buyer')
+  async updateUsername(
+    @Req() req: any,
+    @Body() body: { username: string },
+  ): Promise<ResponseWrapper<any>> {
+    await this.userService.updateUserName(req.user.id, body.username);
+    return new ResponseWrapper(HttpStatus.OK, 'Username change Successful');
   }
 
   @Post('password/reset')

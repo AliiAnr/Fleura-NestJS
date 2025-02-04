@@ -14,7 +14,7 @@ export class Buyer {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({unique: true, nullable: true})
   name: string;
 
   @Column({ unique: true })
