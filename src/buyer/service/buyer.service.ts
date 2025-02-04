@@ -43,7 +43,7 @@ export class BuyerService {
       const userSameName = await this.userRepository.findOne({
         where: { name: name },
       });
-      if(userSameName){
+      if (userSameName) {
         throw new UnprocessableEntityException("Username already exists.");
       }
       const user = await this.userRepository.findOneBy({ id: userId });
@@ -57,6 +57,46 @@ export class BuyerService {
       throw new InternalServerErrorException(error);
     }
   }
+
+  async updateEmail(userId, email): Promise<String> {
+    try {
+      const userSameEmail = await this.userRepository.findOne({
+        where: { email: email },
+      });
+      if (userSameEmail) {
+        throw new UnprocessableEntityException("Email already exists.");
+      }
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+      user.email = email;
+      await this.userRepository.save(user);
+      const access_token = await this.jwtLoginService.sign({
+        id: user.id,
+        email: user.email,
+        role: "buyer",
+      });
+      return access_token;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async updatePhone(userId, phone): Promise<Buyer> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+      user.phone = phone;
+      await this.userRepository.save(user);
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
   private async validateCreateUserRequest(request: RegisterBuyerDto) {
     try {
       const user = await this.userRepository.findOne({

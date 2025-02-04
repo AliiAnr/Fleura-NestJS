@@ -48,6 +48,30 @@ export class BuyerController {
     return new ResponseWrapper(HttpStatus.OK, 'Username change Successful');
   }
 
+  @Put('email')
+  @UseGuards(JwtLoginAuthGuard,RoleGuard)
+  @Roles('buyer')
+  async updateEmail(
+    @Req() req: any,
+    @Body() body: { email: string },
+  ): Promise<ResponseWrapper<any>> {
+    await this.userService.updateEmail(req.user.id, body.email);
+    return new ResponseWrapper(HttpStatus.OK, 'Email change Successful');
+  }
+
+  @Put('phone')
+  @UseGuards(JwtLoginAuthGuard,RoleGuard)
+  @Roles('buyer')
+  async updatePhone(
+    @Req() req: any,
+    @Body() body: { phone: string},
+  ): Promise<ResponseWrapper<any>> {
+    await this.userService.updatePhone(req.user.id, body.phone);
+    return new ResponseWrapper(HttpStatus.OK, 'Phone change Successful');
+  }
+
+
+
   @Post('password/reset')
   @UseGuards(JwtForgotAuthGuard,RoleGuard)
   @Roles('buyer')
