@@ -11,6 +11,8 @@ import { Seller } from "./seller/entity/seller.entity";
 import { MailerModule } from "@nestjs-modules/mailer";
 import * as path from 'path';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
+import { ProductModule } from './product/product.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -63,6 +65,8 @@ import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
     AuthModule,
     BuyerModule,
     SellerModule,
+    ProductModule,
+    StoreModule,
   ],
 })
 export class AppModule {}

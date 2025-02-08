@@ -55,8 +55,10 @@ export class BuyerController {
     @Req() req: any,
     @Body() body: { email: string },
   ): Promise<ResponseWrapper<any>> {
-    await this.userService.updateEmail(req.user.id, body.email);
-    return new ResponseWrapper(HttpStatus.OK, 'Email change Successful');
+    const access_token = await this.userService.updateEmail(req.user.id, body.email);
+    return new ResponseWrapper(HttpStatus.OK, 'Email change Successful',{
+      access_token
+    });
   }
 
   @Put('phone')
