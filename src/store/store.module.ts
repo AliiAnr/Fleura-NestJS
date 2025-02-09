@@ -10,12 +10,13 @@ import { JwtLoginStrategy } from "src/auth/jwt/strategies/jwt.strategy";
 import { SellerService } from "src/seller/service/seller.service";
 import { JwtLoginModule } from "src/auth/jwt/module/jwt.module";
 import { StoreAddress } from "./entity/seller.address.entity";
+import { Product } from "src/product/entity/product.entity";
 
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Seller, Store,StoreAddress]),
+    TypeOrmModule.forFeature([Seller, Store,StoreAddress,Product]),
     // MailerModule,
     JwtLoginModule,
   ],

@@ -19,6 +19,7 @@ import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Multer } from "multer";
 import { UpdateStoreAddressDto } from "../dto/update.store-address.dto";
+
 @Controller("store")
 export class StoreController {
   constructor(private storeService: StoreService) {}
@@ -147,11 +148,7 @@ export class StoreController {
         req.user.id,
         updateStoreAddressDto
       );
-      return new ResponseWrapper(
-        HttpStatus.OK,
-        "Address update successful",
-        updatedAddress
-      );
+      return new ResponseWrapper(HttpStatus.OK, "Address update successful");
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);

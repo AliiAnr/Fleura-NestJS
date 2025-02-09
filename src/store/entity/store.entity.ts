@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { StoreAddress } from "./seller.address.entity";
+import { Product } from "src/product/entity/product.entity";
 // import { Address } from './address.entity';
 
 @Entity("store")
@@ -56,4 +57,10 @@ export class Store {
     nullable: true,
   })
   address: Store;
+
+  @OneToMany(() => Product, (product) => product.store, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  products: Product[];
 }
