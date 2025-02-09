@@ -54,4 +54,10 @@ export class Seller {
     nullable: true,
   })
   address: SellerAddress;
+  @OneToOne(() => SellerAddress, (store) => store.seller, {
+    cascade: true,
+    onDelete: "CASCADE",
+    nullable: true,
+  })
+  store: SellerAddress;
 }

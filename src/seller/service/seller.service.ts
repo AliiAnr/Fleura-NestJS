@@ -29,7 +29,7 @@ export class SellerService {
     private readonly userRepository: Repository<Seller>,
     @InjectRepository(SellerAddress)
     private readonly addressRepository: Repository<SellerAddress>
-) {}
+  ) {}
 
   async createUser(request: RegisterSellerDto): Promise<Seller> {
     try {
