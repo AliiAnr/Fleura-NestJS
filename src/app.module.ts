@@ -13,6 +13,7 @@ import * as path from 'path';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import { ProductModule } from './product/product.module';
 import { StoreModule } from './store/store.module';
+import { SellerAddress } from "./seller/entity/seller.address.entity";
 
 @Module({
   imports: [
@@ -29,7 +30,7 @@ import { StoreModule } from './store/store.module';
           username: configService.get<string>("DATABASE_USERNAME"),
           password: configService.get<string>("DATABASE_PASSWORD"),
           database: configService.get<string>("DATABASE_NAME"),
-          entities: [OtpBuyer,OtpSeller,Buyer,Seller],
+          entities: [OtpBuyer,OtpSeller,Buyer,Seller,SellerAddress],
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };
       },

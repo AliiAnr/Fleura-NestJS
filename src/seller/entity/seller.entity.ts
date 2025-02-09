@@ -8,6 +8,7 @@ import {
 } from "typeorm";
 // import { Address } from './address.entity';
 import { OtpSeller } from "src/auth/entity/otp.seller.entity";
+import { SellerAddress } from "./seller.address.entity";
 
 @Entity("seller")
 export class Seller {
@@ -47,4 +48,10 @@ export class Seller {
 
   @Column({ type: "timestamp", nullable: true })
   verified_at: Date;
+  @OneToOne(() => SellerAddress, (address) => address.seller, {
+    cascade: true,
+    onDelete: "CASCADE",
+    nullable: true,
+  })
+  address: SellerAddress;
 }

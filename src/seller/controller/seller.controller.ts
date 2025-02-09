@@ -23,6 +23,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { extname } from "path";
 import { Multer } from "multer";
+import { UpdateSellerAddressDto } from "../dto/update.seller-address.dto";
 
 @Controller("seller")
 export class SellerController {
@@ -201,5 +202,24 @@ export class SellerController {
   ): Promise<ResponseWrapper<any>> {
     await this.userService.resetPassword(req.user.id, body.newPassword);
     return new ResponseWrapper(HttpStatus.OK, "Password Change Successful");
+  }
+
+  @Put('address')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('seller')
+  async updateSellerAddress(
+    @Req() req: any,
+    @Body() updateSellerAddressDto: UpdateSellerAddressDto,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const updatedAddress = await this.userService.updateSellerAddress(req.user.id, updateSellerAddressDto);
+      return new ResponseWrapper(HttpStatus.OK, 'Address update successful', updatedAddress);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
+      } else {
+        return new ResponseWrapper(HttpStatus.INTERNAL_SERVER_ERROR, 'Failed to update address');
+      }
+    }
   }
 }

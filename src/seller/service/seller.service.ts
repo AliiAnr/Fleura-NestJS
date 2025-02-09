@@ -17,6 +17,8 @@ import { UpdateSellerPartialDto } from "../dto/update.seller-partial.dto";
 import * as path from "path";
 import * as fs from "fs";
 import { Multer } from "multer";
+import { SellerAddress } from "../entity/seller.address.entity";
+import { UpdateSellerAddressDto } from "../dto/update.seller-address.dto";
 
 @Injectable()
 export class SellerService {
@@ -24,8 +26,10 @@ export class SellerService {
     private otpService: OtpSellerService,
     @Inject("JwtLoginService") private jwtLoginService: JwtService,
     @InjectRepository(Seller)
-    private readonly userRepository: Repository<Seller>
-  ) {}
+    private readonly userRepository: Repository<Seller>,
+    @InjectRepository(SellerAddress)
+    private readonly addressRepository: Repository<SellerAddress>
+) {}
 
   async createUser(request: RegisterSellerDto): Promise<Seller> {
     try {
@@ -184,7 +188,12 @@ export class SellerService {
         throw new UnauthorizedException("User not Found");
       }
 
-      const uploadDir = path.join(__dirname, "..", "..", "uploads/seller/picture");
+      const uploadDir = path.join(
+        __dirname,
+        "..",
+        "..",
+        "uploads/seller/picture"
+      );
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
@@ -196,20 +205,28 @@ export class SellerService {
       fs.writeFileSync(uploadPath, file.buffer);
       user.picture = uploadPath;
       await this.userRepository.save(user);
-    //   console.log(user);
+      //   console.log(user);
       return user;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
-  async uploadIdentityPicture(userId: string, file: Multer.File): Promise<Seller> {
+  async uploadIdentityPicture(
+    userId: string,
+    file: Multer.File
+  ): Promise<Seller> {
     try {
       const user = await this.userRepository.findOneBy({ id: userId });
       if (!user) {
         throw new UnauthorizedException("User not Found");
       }
 
-      const uploadDir = path.join(__dirname, "..", "..", "uploads/seller/identity");
+      const uploadDir = path.join(
+        __dirname,
+        "..",
+        "..",
+        "uploads/seller/identity"
+      );
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
@@ -221,8 +238,52 @@ export class SellerService {
       fs.writeFileSync(uploadPath, file.buffer);
       user.identity_picture = uploadPath;
       await this.userRepository.save(user);
-    //   console.log(user);
+      //   console.log(user);
       return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async updateSellerAddress(
+    userId: string,
+    updateSellerAddressDto: UpdateSellerAddressDto
+  ): Promise<SellerAddress> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      let address = await this.addressRepository.findOneBy({
+        sellerId: userId,
+      });
+      if (!address) {
+        address = new SellerAddress();
+        address.sellerId = userId;
+      }
+
+      if (updateSellerAddressDto.postcode) {
+        address.postcode = updateSellerAddressDto.postcode;
+      }
+      if (updateSellerAddressDto.road) {
+        address.road = updateSellerAddressDto.road;
+      }
+      if (updateSellerAddressDto.province) {
+        address.province = updateSellerAddressDto.province;
+      }
+      if (updateSellerAddressDto.city) {
+        address.city = updateSellerAddressDto.city;
+      }
+      if (updateSellerAddressDto.detail) {
+        address.detail = updateSellerAddressDto.detail;
+      }
+      if (updateSellerAddressDto.district) {
+        address.district = updateSellerAddressDto.district;
+      }
+
+      await this.addressRepository.save(address);
+      return address;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

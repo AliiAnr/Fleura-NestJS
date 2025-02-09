@@ -11,11 +11,12 @@ import { OtpSellerService } from "src/auth/service/otp.seller.service";
 import { MailerModule } from "@nestjs-modules/mailer";
 import { JwtLoginModule } from "src/auth/jwt/module/jwt.module";
 import { JwtForgotModule } from "src/auth/jwt/module/jwt-forgot.module";
+import { SellerAddress } from "./entity/seller.address.entity";
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Seller, OtpSeller]),
+    TypeOrmModule.forFeature([Seller, OtpSeller,SellerAddress]),
     // MailerModule,
     MailerModule,
     JwtLoginModule,
