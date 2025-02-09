@@ -7,6 +7,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { StoreAddress } from "./seller.address.entity";
 // import { Address } from './address.entity';
 
 @Entity("store")
@@ -48,4 +49,11 @@ export class Store {
 
   @Column("uuid") // Foreign key untuk user disimpan sebagai UUID
   sellerId: string;
+
+  @OneToOne(() => StoreAddress, (address) => address.store, {
+    cascade: true,
+    onDelete: "CASCADE",
+    nullable: true,
+  })
+  address: Store;
 }

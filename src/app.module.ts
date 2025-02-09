@@ -15,6 +15,7 @@ import { ProductModule } from "./product/product.module";
 import { StoreModule } from "./store/store.module";
 import { SellerAddress } from "./seller/entity/seller.address.entity";
 import { Store } from "./store/entity/store.entity";
+import { StoreAddress } from "./store/entity/seller.address.entity";
 
 @Module({
   imports: [
@@ -31,7 +32,7 @@ import { Store } from "./store/entity/store.entity";
           username: configService.get<string>("DATABASE_USERNAME"),
           password: configService.get<string>("DATABASE_PASSWORD"),
           database: configService.get<string>("DATABASE_NAME"),
-          entities: [OtpBuyer, OtpSeller, Buyer, Seller, SellerAddress, Store],
+          entities: [OtpBuyer, OtpSeller, Buyer, Seller, SellerAddress, Store,StoreAddress],
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };
       },

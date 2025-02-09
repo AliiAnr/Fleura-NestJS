@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Put,
   Req,
@@ -17,6 +18,7 @@ import { UpdateStoreDto } from "../dto/store.update.dto";
 import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Multer } from "multer";
+import { UpdateStoreAddressDto } from "../dto/update.store-address.dto";
 @Controller("store")
 export class StoreController {
   constructor(private storeService: StoreService) {}
@@ -67,7 +69,10 @@ export class StoreController {
         req.user.id,
         file
       );
-      return new ResponseWrapper(HttpStatus.OK, "Store picture upload successful");
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        "Store picture upload successful"
+      );
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
@@ -108,6 +113,52 @@ export class StoreController {
         return new ResponseWrapper(
           HttpStatus.INTERNAL_SERVER_ERROR,
           "Failed to upload store logo"
+        );
+      }
+    }
+  }
+  @Get()
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller")
+  async getStore(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const store = await this.storeService.getStore(req.user.id);
+      return new ResponseWrapper(HttpStatus.OK, "Store details", store);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to get store details"
+        );
+      }
+    }
+  }
+  @Put("address")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller")
+  async updateStoreAddress(
+    @Req() req: any,
+    @Body() updateStoreAddressDto: UpdateStoreAddressDto
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const updatedAddress = await this.storeService.updateStoreAddress(
+        req.user.id,
+        updateStoreAddressDto
+      );
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        "Address update successful",
+        updatedAddress
+      );
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to update address"
         );
       }
     }

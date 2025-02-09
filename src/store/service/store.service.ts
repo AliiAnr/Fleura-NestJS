@@ -1,4 +1,9 @@
-import { Inject, Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Seller } from "src/seller/entity/seller.entity";
@@ -8,6 +13,8 @@ import { UpdateStoreDto } from "../dto/store.update.dto";
 import * as path from "path";
 import * as fs from "fs";
 import { Multer } from "multer";
+import { UpdateStoreAddressDto } from "../dto/update.store-address.dto";
+import { StoreAddress } from "../entity/seller.address.entity";
 
 @Injectable()
 export class StoreService {
@@ -16,7 +23,9 @@ export class StoreService {
     @InjectRepository(Seller)
     private readonly userRepository: Repository<Seller>,
     @InjectRepository(Store)
-    private readonly storeRepository: Repository<Store>
+    private readonly storeRepository: Repository<Store>,
+    @InjectRepository(StoreAddress)
+    private readonly addressRepository: Repository<StoreAddress>,
   ) {}
 
   async updateStore(userId: string, request: UpdateStoreDto): Promise<Store> {
@@ -93,12 +102,7 @@ export class StoreService {
         throw new UnauthorizedException("Store not Found");
       }
 
-      const uploadDir = path.join(
-        __dirname,
-        "..",
-        "..",
-        "uploads/store/logo"
-      );
+      const uploadDir = path.join(__dirname, "..", "..", "uploads/store/logo");
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }
@@ -116,4 +120,61 @@ export class StoreService {
       throw new InternalServerErrorException(error);
     }
   }
+  async getStore(userId: string): Promise<Partial<Store>> {
+    try {
+      const store = await this.storeRepository.findOneBy({ sellerId: userId });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
+      }
+      const { id, sellerId, ...storeData } = store;
+      return storeData;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+
+  async updateStoreAddress(
+      userId: string,
+      updateSellerAddressDto: UpdateStoreAddressDto
+    ): Promise<StoreAddress> {
+      try {
+        const store = await this.storeRepository.findOneBy({ sellerId: userId });
+        if (!store) {
+          throw new UnauthorizedException("Store not Found");
+        }
+  
+        let address = await this.addressRepository.findOneBy({
+          storeId: store.id,
+        });
+        if (!address) {
+          address = new StoreAddress();
+          address.storeId = store.id;
+        }
+  
+        if (updateSellerAddressDto.postcode) {
+          address.postcode = updateSellerAddressDto.postcode;
+        }
+        if (updateSellerAddressDto.road) {
+          address.road = updateSellerAddressDto.road;
+        }
+        if (updateSellerAddressDto.province) {
+          address.province = updateSellerAddressDto.province;
+        }
+        if (updateSellerAddressDto.city) {
+          address.city = updateSellerAddressDto.city;
+        }
+        if (updateSellerAddressDto.detail) {
+          address.detail = updateSellerAddressDto.detail;
+        }
+        if (updateSellerAddressDto.district) {
+          address.district = updateSellerAddressDto.district;
+        }
+  
+        await this.addressRepository.save(address);
+        return address;
+      } catch (error) {
+        throw new InternalServerErrorException(error);
+      }
+    }
 }
