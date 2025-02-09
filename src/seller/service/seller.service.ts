@@ -14,6 +14,9 @@ import { Seller } from "../entity/seller.entity";
 import { OtpSellerService } from "src/auth/service/otp.seller.service";
 import { RegisterSellerDto } from "../dto/register.seller.dto";
 import { UpdateSellerPartialDto } from "../dto/update.seller-partial.dto";
+import * as path from "path";
+import * as fs from "fs";
+import { Multer } from "multer";
 
 @Injectable()
 export class SellerService {
@@ -169,6 +172,56 @@ export class SellerService {
       }
 
       await this.userRepository.save(user);
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+  async uploadPicture(userId: string, file: Multer.File): Promise<Seller> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      const uploadDir = path.join(__dirname, "..", "..", "uploads/seller/picture");
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const fileExtension = path.extname(file.originalname);
+      const filename = `${userId}${fileExtension}`;
+      const uploadPath = path.join(uploadDir, filename);
+
+      fs.writeFileSync(uploadPath, file.buffer);
+      user.picture = uploadPath;
+      await this.userRepository.save(user);
+    //   console.log(user);
+      return user;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+  async uploadIdentityPicture(userId: string, file: Multer.File): Promise<Seller> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      const uploadDir = path.join(__dirname, "..", "..", "uploads/seller/identity");
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const fileExtension = path.extname(file.originalname);
+      const filename = `${userId}${fileExtension}`;
+      const uploadPath = path.join(uploadDir, filename);
+
+      fs.writeFileSync(uploadPath, file.buffer);
+      user.identity_picture = uploadPath;
+      await this.userRepository.save(user);
+    //   console.log(user);
       return user;
     } catch (error) {
       throw new InternalServerErrorException(error);
