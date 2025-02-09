@@ -19,14 +19,16 @@ import { RoleGuard } from "../jwt/guards/roles.guard";
 import { Roles } from "../jwt/decorators/roles.decorator";
 import { JwtForgotAuthGuard } from "../jwt/guards/jwt-forgot.guard";
 import { JwtLoginAuthGuard } from "../jwt/guards/jwt.guard";
+import { OtpSellerService } from "../service/otp.seller.service";
+import { AuthSellerService } from "../service/auth.seller.service";
 
 @Controller("seller/auth")
 export class AuthSellerController {
   jwtService: any;
   constructor(
-    @Inject("AUTH_BUYER_SERVICE")
-    private readonly authService: AuthBuyerService,
-    private otpService: OtpBuyerService
+    @Inject("AUTH_SELLER_SERVICE")
+    private readonly authService: AuthSellerService,
+    private otpService: OtpSellerService
   ) {}
 
   @Post("login")

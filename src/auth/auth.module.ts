@@ -18,6 +18,8 @@ import { JwtLoginStrategy } from "./jwt/strategies/jwt.strategy";
 import { JwtForgotStrategy } from "./jwt/strategies/jwt-forgot.strategy";
 import { GoogleStrategy } from "./google/google.strategy";
 import { OtpBuyerService } from "./service/otp.buyer.service";
+import { AuthSellerService } from "./service/auth.seller.service";
+import { OtpSellerService } from "./service/otp.seller.service";
 
 @Module({
   imports: [
@@ -34,7 +36,12 @@ import { OtpBuyerService } from "./service/otp.buyer.service";
       provide: "AUTH_BUYER_SERVICE",
       useClass: AuthBuyerService,
     },
+    {
+      provide: "AUTH_SELLER_SERVICE",
+      useClass: AuthSellerService,
+    },
     OtpBuyerService,
+    OtpSellerService,
     LocalStrategy,
     JwtLoginStrategy,
     JwtForgotStrategy,

@@ -13,7 +13,7 @@ import { AuthSellerService } from "src/auth/service/auth.seller.service";
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(
     @Inject("AUTH_BUYER_SERVICE")
-    private readonly authBuyerService: AuthBuyerService
+    private readonly authBuyerService: AuthBuyerService,
     @Inject("AUTH_SELLER_SERVICE")
     private readonly authSellerService: AuthSellerService
   ) {

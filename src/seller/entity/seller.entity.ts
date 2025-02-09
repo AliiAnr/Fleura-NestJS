@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 // import { Address } from './address.entity';
-import { OtpBuyer } from "src/auth/entity/otp.buyer.entity";
 import { OtpSeller } from "src/auth/entity/otp.seller.entity";
 
 @Entity("seller")
@@ -15,25 +14,25 @@ export class Seller {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column({unique: true})
+  @Column({ nullable: true })
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   picture: string;
 
   @Column({ unique: true })
   email: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   account: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   identity_number: string;
 
-  @Column()
+  @Column({ nullable: true })
   identity_picture: string;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   phone: string;
 
   @Column({ nullable: true })
@@ -44,8 +43,8 @@ export class Seller {
     onDelete: "CASCADE",
     nullable: true, // OTP bisa null
   })
-  otp: OtpBuyer;
+  otp: OtpSeller;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   verified_at: Date;
 }
