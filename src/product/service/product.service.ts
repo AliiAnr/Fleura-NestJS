@@ -31,7 +31,7 @@ export class ProductService {
     @InjectRepository(ProductPicture)
     private readonly productPictureRepository: Repository<ProductPicture>,
     @InjectRepository(ProductCategory)
-        private readonly productCategoryRepository: Repository<ProductCategory>
+    private readonly productCategoryRepository: Repository<ProductCategory>
   ) {}
 
   async createProduct(
@@ -202,19 +202,19 @@ export class ProductService {
   }
 
   async updateProductCategory(
-    userId: string,
-    productId: string,
-    categoryId: string
+    user_id: string,
+    product_id: string,
+    category_id: string
   ): Promise<Product> {
     try {
       const store = await this.storeRepository.findOne({
-        where: { sellerId: userId },
+        where: { sellerId: user_id },
       });
       if (!store) {
         throw new UnauthorizedException("Store not Found");
       }
       const product = await this.productRepository.findOne({
-        where: { id: productId, store: store },
+        where: { id: product_id, store: store },
         relations: ["category"],
       });
 
@@ -223,18 +223,44 @@ export class ProductService {
       }
 
       const category = await this.productCategoryRepository.findOne({
-        where: { id: categoryId },
+        where: { id: category_id },
       });
       if (!category) {
         throw new UnauthorizedException("Category not Found");
       }
 
-      product.category=category;
+      product.category = category;
       await this.productRepository.save(product);
       return product;
     } catch (error) {
       throw new UnauthorizedException("Failed to update product category");
     }
   }
+  async deleteProductCategory(
+    user_id: string,
+    product_id: string
+  ): Promise<Product> {
+    try {
+      const store = await this.storeRepository.findOne({
+        where: { sellerId: user_id },
+      });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
+      }
+      const product = await this.productRepository.findOne({
+        where: { id: product_id, store: store },
+        relations: ["category"],
+      });
 
+      if (!product) {
+        throw new UnauthorizedException("Product not Found");
+      }
+
+      product.category = null;
+      await this.productRepository.save(product);
+      return product;
+    } catch (error) {
+      throw new UnauthorizedException("Failed to delete product category");
+    }
+  }
 }

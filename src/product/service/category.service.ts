@@ -2,6 +2,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
@@ -42,6 +43,26 @@ export class CategoryService {
       return savedCategory;
     } catch (error) {
       throw new InternalServerErrorException("Failed to create category.");
+    }
+  }
+
+  async deleteCategory(category_id: string): Promise<void> {
+    try {
+      const category = await this.productCategoryRepository.findOne({
+        where: { id: category_id },
+        relations: ['product'], // Pastikan untuk memuat relasi products
+      });
+      if (!category) {
+        throw new NotFoundException("Category not found");
+      }
+  
+      if (category.product && category.product.length > 0) {
+        throw new UnauthorizedException("Category cannot be deleted because it is associated with one or more products.");
+      }
+  
+      await this.productCategoryRepository.remove(category);
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to delete category.");
     }
   }
 }

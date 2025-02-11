@@ -178,8 +178,8 @@ export class ProductController {
     try {
       const product = await this.productService.updateProductCategory(
         req.user.id,
-        request.productId,
-        request.categoryId
+        request.product_id,
+        request.category_id
       );
       return new ResponseWrapper(
         HttpStatus.OK,
@@ -192,6 +192,33 @@ export class ProductController {
         return new ResponseWrapper(
           HttpStatus.INTERNAL_SERVER_ERROR,
           'Failed to update product category'
+        );
+      }
+    }
+  }
+  @Delete('category')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles('seller')
+  async deleteProductCategory(
+    @Req() req: any,
+    @Body() request: { product_id: string }
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const product = await this.productService.deleteProductCategory(
+        req.user.id,
+        request.product_id
+      );
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        'Product category deleted successfully'
+      );
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          'Failed to delete product category'
         );
       }
     }

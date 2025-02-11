@@ -49,4 +49,22 @@ export class CategoryController {
       );
     }
   }
+
+  @Delete()
+  async deleteCategory(
+    @Body() request: { category_id: string }
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      await this.categoryService.deleteCategory(request.category_id);
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        "Category deleted successfully"
+      );
+    } catch (error) {
+      return new ResponseWrapper(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to delete category"
+      );
+    }
+  }
 }

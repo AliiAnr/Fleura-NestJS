@@ -4,8 +4,8 @@ import {
 
 export class UpdateProductCategoryDto {
   @IsUUID()
-  productId: string;
+  product_id: string;
 
   @IsUUID()
-  categoryId: string;
+  category_id: string;
 }
