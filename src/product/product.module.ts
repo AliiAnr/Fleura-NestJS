@@ -7,15 +7,19 @@ import { Seller } from "src/seller/entity/seller.entity";
 import { Store } from "src/store/entity/store.entity";
 import { Product } from "./entity/product.entity";
 import { JwtLoginModule } from "src/auth/jwt/module/jwt.module";
+import { ProductPicture } from "./entity/product-picture.entity";
+import { ProductCategory } from "./entity/product-category.entity";
+import { CategoryController } from "./controller/category.controller";
+import { CategoryService } from "./service/category.service";
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Seller, Store, Product]),
+    TypeOrmModule.forFeature([Seller, Store, Product, ProductPicture,ProductCategory]),
     // MailerModule,
     JwtLoginModule,
   ],
-  providers: [ProductService],
-  controllers: [ProductController],
+  providers: [ProductService, CategoryService],
+  controllers: [ProductController, CategoryController],
 })
 export class ProductModule {}

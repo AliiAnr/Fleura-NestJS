@@ -17,6 +17,8 @@ import { SellerAddress } from "./seller/entity/seller.address.entity";
 import { Store } from "./store/entity/store.entity";
 import { StoreAddress } from "./store/entity/seller.address.entity";
 import { Product } from "./product/entity/product.entity";
+import { ProductPicture } from "./product/entity/product-picture.entity";
+import { ProductCategory } from "./product/entity/product-category.entity";
 
 @Module({
   imports: [
@@ -33,7 +35,7 @@ import { Product } from "./product/entity/product.entity";
           username: configService.get<string>("DATABASE_USERNAME"),
           password: configService.get<string>("DATABASE_PASSWORD"),
           database: configService.get<string>("DATABASE_NAME"),
-          entities: [OtpBuyer, OtpSeller, Buyer, Seller, SellerAddress, Store,StoreAddress, Product],
+          entities: [OtpBuyer, OtpSeller, Buyer, Seller, SellerAddress, Store,StoreAddress, Product, ProductPicture,ProductCategory],
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };
       },

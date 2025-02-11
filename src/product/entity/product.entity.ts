@@ -9,6 +9,8 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { ProductPicture } from "./product-picture.entity";
+import { ProductCategory } from "./product-category.entity";
 
 // import { Address } from './address.entity';
 
@@ -26,7 +28,7 @@ export class Product {
   @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
   price: number;
 
-  @Column({ nullable: true, default: false })
+  @Column({default: false })
   pre_order: boolean;
 
   @Column({ nullable: true })
@@ -40,4 +42,12 @@ export class Product {
 
   @ManyToOne(() => Store, (store) => store.products)
   store: Store;
+
+  @OneToMany(() => ProductPicture, (picture) => picture.product, {
+    cascade: true,
+  })
+  picture: ProductPicture[];
+
+  @ManyToOne(() => ProductCategory, (category) => category.product)
+  category: ProductCategory;
 }

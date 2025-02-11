@@ -73,9 +73,7 @@ export class StoreService {
       }
 
       const uploadDir = path.join(
-        __dirname,
-        "..",
-        "..",
+        process.cwd(),
         "uploads/store/picture"
       );
       if (!fs.existsSync(uploadDir)) {
@@ -102,7 +100,7 @@ export class StoreService {
         throw new UnauthorizedException("Store not Found");
       }
 
-      const uploadDir = path.join(__dirname, "..", "..", "uploads/store/logo");
+      const uploadDir = path.join(process.cwd(), "uploads/store/logo");
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
       }

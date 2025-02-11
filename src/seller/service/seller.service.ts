@@ -189,9 +189,7 @@ export class SellerService {
       }
 
       const uploadDir = path.join(
-        __dirname,
-        "..",
-        "..",
+        process.cwd(),
         "uploads/seller/picture"
       );
       if (!fs.existsSync(uploadDir)) {
@@ -222,9 +220,7 @@ export class SellerService {
       }
 
       const uploadDir = path.join(
-        __dirname,
-        "..",
-        "..",
+        process.cwd(),
         "uploads/seller/identity"
       );
       if (!fs.existsSync(uploadDir)) {
