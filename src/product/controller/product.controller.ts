@@ -71,8 +71,7 @@ export class ProductController {
       );
       return new ResponseWrapper(
         HttpStatus.OK,
-        "Product updated successfully",
-        product
+        "Product updated successfully"
       );
     } catch (error) {
       if (error instanceof UnauthorizedException) {

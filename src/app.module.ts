@@ -19,6 +19,12 @@ import { StoreAddress } from "./store/entity/seller.address.entity";
 import { Product } from "./product/entity/product.entity";
 import { ProductPicture } from "./product/entity/product-picture.entity";
 import { ProductCategory } from "./product/entity/product-category.entity";
+import { BuyerAddress } from "./buyer/entity/buyer.address.entity";
+import { ProductReview } from "./product/entity/product-review.entity";
+import { OrderModule } from './order/order.module';
+import { Order } from "./order/entity/order.entity";
+import { OrderItem } from "./order/entity/order-item.entity";
+import { Payment } from "./order/entity/payment.entity";
 
 @Module({
   imports: [
@@ -35,7 +41,23 @@ import { ProductCategory } from "./product/entity/product-category.entity";
           username: configService.get<string>("DATABASE_USERNAME"),
           password: configService.get<string>("DATABASE_PASSWORD"),
           database: configService.get<string>("DATABASE_NAME"),
-          entities: [OtpBuyer, OtpSeller, Buyer, Seller, SellerAddress, Store,StoreAddress, Product, ProductPicture,ProductCategory],
+          entities: [
+            OtpBuyer,
+            OtpSeller,
+            Buyer,
+            Seller,
+            SellerAddress,
+            Store,
+            StoreAddress,
+            Product,
+            ProductPicture,
+            ProductCategory,
+            BuyerAddress,
+            ProductReview,
+            Order,
+            OrderItem,
+            Payment,
+          ],
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };
       },
@@ -73,6 +95,7 @@ import { ProductCategory } from "./product/entity/product-category.entity";
     SellerModule,
     ProductModule,
     StoreModule,
+    OrderModule,
   ],
 })
 export class AppModule {}

@@ -213,7 +213,7 @@ export class SellerController {
   ): Promise<ResponseWrapper<any>> {
     try {
       const updatedAddress = await this.userService.updateSellerAddress(req.user.id, updateSellerAddressDto);
-      return new ResponseWrapper(HttpStatus.OK, 'Address update successful', updatedAddress);
+      return new ResponseWrapper(HttpStatus.OK, 'Address update successful');
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);

@@ -38,6 +38,5 @@ export class UpdateProductDto {
   @IsNumber()
   point?: number;
 
-  @IsUUID()
-  storeId: string;
+
 }

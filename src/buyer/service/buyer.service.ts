@@ -2,6 +2,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
 } from "@nestjs/common";
@@ -12,13 +13,18 @@ import { Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { RegisterBuyerDto } from "../dto/register-buyer.dto";
+import { BuyerAddress } from "../entity/buyer.address.entity";
+import { UpdateBuyerAddressDto } from "../dto/update.buyer-address.dto";
+import { CreateBuyerAddressDto } from "../dto/create.buyer-address.dto";
 
 @Injectable()
 export class BuyerService {
   constructor(
     private otpService: OtpBuyerService,
     @Inject("JwtLoginService") private jwtLoginService: JwtService,
-    @InjectRepository(Buyer) private readonly userRepository: Repository<Buyer>
+    @InjectRepository(Buyer) private readonly userRepository: Repository<Buyer>,
+    @InjectRepository(BuyerAddress)
+    private readonly addressRepository: Repository<BuyerAddress>
   ) {}
 
   async createUser(request: RegisterBuyerDto): Promise<Buyer> {
@@ -129,6 +135,95 @@ export class BuyerService {
       return user;
     } catch (error) {
       throw new InternalServerErrorException(error);
+    }
+  }
+
+  async updateBuyerAddress(
+    userId: string,
+    updateBuyerAddressDto: UpdateBuyerAddressDto
+  ): Promise<BuyerAddress> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      let address = await this.addressRepository.findOne({
+        where: { id: updateBuyerAddressDto.addressId, buyer: { id: userId } },
+      });
+      if (!address) {
+        throw new UnprocessableEntityException("Address not Found");
+      }
+
+      if (updateBuyerAddressDto.postcode) {
+        address.postcode = updateBuyerAddressDto.postcode;
+      }
+      if (updateBuyerAddressDto.road) {
+        address.road = updateBuyerAddressDto.road;
+      }
+      if (updateBuyerAddressDto.province) {
+        address.province = updateBuyerAddressDto.province;
+      }
+      if (updateBuyerAddressDto.city) {
+        address.city = updateBuyerAddressDto.city;
+      }
+      if (updateBuyerAddressDto.detail) {
+        address.detail = updateBuyerAddressDto.detail;
+      }
+      if (updateBuyerAddressDto.district) {
+        address.district = updateBuyerAddressDto.district;
+      }
+
+      await this.addressRepository.save(address);
+      return address;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async addAddress(
+    userId: string,
+    request: CreateBuyerAddressDto
+  ): Promise<BuyerAddress> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      const address = new BuyerAddress();
+      address.buyer = user;
+      address.postcode = request.postcode;
+      address.road = request.road;
+      address.province = request.province;
+      address.city = request.city;
+      address.detail = request.detail;
+      address.district = request.district;
+
+      await this.addressRepository.save(address);
+      return address;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async deleteAddress(userId: string, addressId: string): Promise<void> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      const address = await this.addressRepository.findOne({
+        where: { id: addressId, buyer: { id: userId } },
+      });
+      if (!address) {
+        throw new NotFoundException("Address not Found");
+      }
+
+      await this.addressRepository.remove(address);
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to delete address.");
     }
   }
 }

@@ -11,6 +11,8 @@ import { JwtForgotModule } from "src/auth/jwt/module/jwt-forgot.module";
 import { JwtLoginStrategy } from "src/auth/jwt/strategies/jwt.strategy";
 import { JwtForgotStrategy } from "src/auth/jwt/strategies/jwt-forgot.strategy";
 import { OtpBuyerService } from "src/auth/service/otp.buyer.service";
+import { BuyerAddress } from "./entity/buyer.address.entity";
+import { Order } from "src/order/entity/order.entity";
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { OtpBuyerService } from "src/auth/service/otp.buyer.service";
     TypeOrmModule.forFeature([
       Buyer,
       OtpBuyer,
+      BuyerAddress,
+      Order,
     ]),
     MailerModule,
     JwtLoginModule,

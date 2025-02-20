@@ -9,6 +9,7 @@ import {
 // import { Address } from './address.entity';
 import { OtpSeller } from "src/auth/entity/otp.seller.entity";
 import { SellerAddress } from "./seller.address.entity";
+import { Store } from "src/store/entity/store.entity";
 
 @Entity("seller")
 export class Seller {
@@ -54,10 +55,11 @@ export class Seller {
     nullable: true,
   })
   address: SellerAddress;
-  @OneToOne(() => SellerAddress, (store) => store.seller, {
+
+  @OneToOne(() => Store, (store) => store.seller, {
     cascade: true,
     onDelete: "CASCADE",
     nullable: true,
   })
-  store: SellerAddress;
+  store: Store;
 }

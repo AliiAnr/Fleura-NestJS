@@ -9,6 +9,7 @@ import {
 } from "typeorm";
 import { StoreAddress } from "./seller.address.entity";
 import { Product } from "src/product/entity/product.entity";
+import { Order } from "src/order/entity/order.entity";
 // import { Address } from './address.entity';
 
 @Entity("store")
@@ -63,4 +64,10 @@ export class Store {
     onDelete: "CASCADE",
   })
   products: Product[];
+
+  @OneToMany(()=> Order, (order) => order.store, {
+    cascade: true,
+    onDelete: "CASCADE",
+  })
+  order: Order[];
 }

@@ -11,15 +11,29 @@ import { ProductPicture } from "./entity/product-picture.entity";
 import { ProductCategory } from "./entity/product-category.entity";
 import { CategoryController } from "./controller/category.controller";
 import { CategoryService } from "./service/category.service";
+import { ProductReview } from "./entity/product-review.entity";
+import { ReviewService } from "./service/review.service";
+import { ReviewController } from "./controller/review.controller";
+import { Buyer } from "src/buyer/entity/buyer.entity";
+import { OrderItem } from "src/order/entity/order-item.entity";
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Seller, Store, Product, ProductPicture,ProductCategory]),
+    TypeOrmModule.forFeature([
+      Seller,
+      Store,
+      Product,
+      ProductPicture,
+      ProductCategory,
+      ProductReview,
+      Buyer,
+      OrderItem,
+    ]),
     // MailerModule,
     JwtLoginModule,
   ],
-  providers: [ProductService, CategoryService],
-  controllers: [ProductController, CategoryController],
+  providers: [ProductService, CategoryService,ReviewService],
+  controllers: [ProductController, CategoryController,ReviewController],
 })
 export class ProductModule {}

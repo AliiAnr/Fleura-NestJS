@@ -119,8 +119,9 @@ export class StoreController {
     }
   }
   @Get()
-  @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @UseGuards(JwtLoginAuthGuard)
+  // @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  // @Roles("seller")
   async getStore(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
       const store = await this.storeService.getStore(req.user.id);

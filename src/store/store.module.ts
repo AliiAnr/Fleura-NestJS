@@ -11,20 +11,16 @@ import { SellerService } from "src/seller/service/seller.service";
 import { JwtLoginModule } from "src/auth/jwt/module/jwt.module";
 import { StoreAddress } from "./entity/seller.address.entity";
 import { Product } from "src/product/entity/product.entity";
-
+import { Order } from "src/order/entity/order.entity";
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Seller, Store,StoreAddress,Product]),
+    TypeOrmModule.forFeature([Seller, Store, StoreAddress, Product, Order]),
     // MailerModule,
     JwtLoginModule,
   ],
   controllers: [StoreController],
-  providers: [
-
-    JwtLoginStrategy,
-    StoreService,
-  ],
+  providers: [JwtLoginStrategy, StoreService],
 })
 export class StoreModule {}

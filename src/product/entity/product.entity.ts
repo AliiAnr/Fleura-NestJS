@@ -11,6 +11,8 @@ import {
 } from "typeorm";
 import { ProductPicture } from "./product-picture.entity";
 import { ProductCategory } from "./product-category.entity";
+import { ProductReview } from "./product-review.entity";
+import { OrderItem } from "src/order/entity/order-item.entity";
 
 // import { Address } from './address.entity';
 
@@ -48,6 +50,14 @@ export class Product {
   })
   picture: ProductPicture[];
 
+  @OneToMany(() => ProductReview, (review) => review.product, {
+    cascade: true,
+  })
+  review: ProductReview[];
+
   @ManyToOne(() => ProductCategory, (category) => category.product)
   category: ProductCategory;
+
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.product)
+  orderItems: OrderItem[];
 }
