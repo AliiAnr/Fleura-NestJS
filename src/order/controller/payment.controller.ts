@@ -17,30 +17,36 @@ import { CreateOrderDto } from "../dto/create-order.dto";
 import { PaymentService } from "../service/payment.service";
 
 
-@Controller("order")
-export class OrderController {
+@Controller("payment")
+export class PaymentController {
   constructor(
     private orderService: OrderService,
-    private midtransService: PaymentService
+    private paymentService: PaymentService
   ) {}
 
-  @Post()
+  @Post("qris/:orderId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("buyer")
-  async createOrder(
-    @Req() req: any,
-    @Body() request: CreateOrderDto
+  async createQrisTransaction(
+    @Param("orderId") orderId: string
   ): Promise<ResponseWrapper<any>> {
+    // console.log("Order ID: ", orderId);
     try {
-      const order = await this.orderService.createOrder(req.user.id, request);
-      return new ResponseWrapper(HttpStatus.CREATED, "Order created");
+      const transaction =
+        await this.paymentService.createQrisTransaction(orderId);
+      // console.log("Transaction: ", transaction);
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "QRIS transaction created successfully",
+        transaction
+      );
+
+      // console.log("Transaction: ", transaction);
     } catch (error) {
       throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
+        new ResponseWrapper(HttpStatus.INTERNAL_SERVER_ERROR, error.message),
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
-
-  
 }

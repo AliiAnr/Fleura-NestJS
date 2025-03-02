@@ -1,9 +1,10 @@
 import { IsString, IsOptional, IsNotEmpty, IsUUID, IsEnum } from "class-validator";
+import { TakenMethod } from "../entity/order.entity";
 
-export enum TakenMethod {
-  PICKUP = "pickup",
-  DELIVERY = "delivery",
-}
+// export enum TakenMethod {
+//   PICKUP = "pickup",
+//   DELIVERY = "delivery",
+// }
 export class CreateOrderDto {
   @IsNotEmpty()
   items: { productId: string; quantity: number }[];

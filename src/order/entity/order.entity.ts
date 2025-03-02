@@ -19,6 +19,13 @@ export enum TakenMethod {
   PICKUP = "pickup",
   DELIVERY = "delivery",
 }
+export enum OrderStatus {
+  CREATED = "created",
+  PROCESS = "process",
+  PICKUP = "pickup",
+  DELIVERY = "delivery",
+  COMPLETED = "completed",
+}
 
 @Entity("order")
 export class Order {
@@ -40,7 +47,7 @@ export class Order {
   @Column({ type: "enum", enum: TakenMethod, default: TakenMethod.PICKUP })
   taken_method: TakenMethod;
 
-  @Column({ nullable: true })
+  @Column({ type: "enum", enum: OrderStatus, default: OrderStatus.CREATED })
   status: string;
 
   @ManyToOne(() => Store, (store) => store.order)

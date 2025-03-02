@@ -22,9 +22,7 @@ export enum PaymentMethod {
 
 export enum PaymentStatus {
   EXPIRE = "expire",
-
   UNPAID = "unpaid",
-
   PAID = "paid",
 }
 
@@ -39,6 +37,9 @@ export class Payment {
   @Column({ type: "enum", enum: PaymentStatus, default: PaymentStatus.UNPAID })
   status: PaymentStatus;
 
+  @Column({ type: "enum", enum: PaymentMethod })
+  methode: PaymentMethod;
+
   @Column({ nullable: true })
   success_at: Date;
 
@@ -48,5 +49,5 @@ export class Payment {
   order: Order;
 
   @Column({ nullable: true })
-  orderId: string;  
+  orderId: string;
 }
