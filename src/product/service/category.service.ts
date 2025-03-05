@@ -65,4 +65,13 @@ export class CategoryService {
       throw new InternalServerErrorException("Failed to delete category.");
     }
   }
+
+  async getAllCategory(): Promise<ProductCategory[]> {
+    try {
+      const categories = await this.productCategoryRepository.find();
+      return categories;
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to get categories.");
+    }
+  }
 }

@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
+  NotFoundException,
+  Param,
   Post,
   Put,
   Req,
@@ -96,6 +99,49 @@ export class SellerController {
     }
   }
 
+  @Get("address")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller")
+  async getBuyerAddress(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const addresses = await this.userService.getAddress(req.user.id);
+      return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to retrieve address"
+        );
+      }
+    }
+  }
+  @Get("address/detail/:addressId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller")
+  async getBuyerAddres(
+    @Req() req: any,
+    @Param("addressId") addressId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const addresses = await this.userService.getAddressByAddressId(
+        req.user.id,
+        addressId
+      );
+      return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to retrieve address"
+        );
+      }
+    }
+  }
+
   @Put("email")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller")
@@ -114,9 +160,7 @@ export class SellerController {
   @Put("picture")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller")
-  @UseInterceptors(
-    FileInterceptor("file")
-  )
+  @UseInterceptors(FileInterceptor("file"))
   async uploadPicture(
     @Req() req: any,
     @UploadedFile() file: Multer.File
@@ -149,9 +193,7 @@ export class SellerController {
   @Put("identity")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller")
-  @UseInterceptors(
-    FileInterceptor("file")
-  )
+  @UseInterceptors(FileInterceptor("file"))
   async uploadIdentity(
     @Req() req: any,
     @UploadedFile() file: Multer.File
@@ -169,7 +211,10 @@ export class SellerController {
         req.user.id,
         file
       );
-      return new ResponseWrapper(HttpStatus.OK, "Identity picture upload successful");
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        "Identity picture upload successful"
+      );
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
@@ -204,21 +249,69 @@ export class SellerController {
     return new ResponseWrapper(HttpStatus.OK, "Password Change Successful");
   }
 
-  @Put('address')
+  @Put("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles('seller')
+  @Roles("seller")
   async updateSellerAddress(
     @Req() req: any,
-    @Body() updateSellerAddressDto: UpdateSellerAddressDto,
+    @Body() updateSellerAddressDto: UpdateSellerAddressDto
   ): Promise<ResponseWrapper<any>> {
     try {
-      const updatedAddress = await this.userService.updateSellerAddress(req.user.id, updateSellerAddressDto);
-      return new ResponseWrapper(HttpStatus.OK, 'Address update successful');
+      const updatedAddress = await this.userService.updateSellerAddress(
+        req.user.id,
+        updateSellerAddressDto
+      );
+      return new ResponseWrapper(HttpStatus.OK, "Address update successful");
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
       } else {
-        return new ResponseWrapper(HttpStatus.INTERNAL_SERVER_ERROR, 'Failed to update address');
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to update address"
+        );
+      }
+    }
+  }
+
+  @Get("detail/:userId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin")
+  async getUserById(
+    @Req() req: any,
+    @Param("userId") userId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const user = await this.userService.getOneSeller(userId);
+      return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to retrieve user"
+        );
+      }
+    }
+  }
+  @Get("")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
+  async getUsers(
+    @Req() req: any,
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const users = await this.userService.getAllSellers();
+      return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to retrieve user"
+        );
       }
     }
   }

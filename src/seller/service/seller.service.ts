@@ -2,6 +2,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
   UnprocessableEntityException,
 } from "@nestjs/common";
@@ -19,6 +20,7 @@ import * as fs from "fs";
 import { Multer } from "multer";
 import { SellerAddress } from "../entity/seller.address.entity";
 import { UpdateSellerAddressDto } from "../dto/update.seller-address.dto";
+import { SupabaseService } from "src/supabase/supabase.service";
 
 @Injectable()
 export class SellerService {
@@ -28,7 +30,8 @@ export class SellerService {
     @InjectRepository(Seller)
     private readonly userRepository: Repository<Seller>,
     @InjectRepository(SellerAddress)
-    private readonly addressRepository: Repository<SellerAddress>
+    private readonly addressRepository: Repository<SellerAddress>,
+    private readonly supabaseService: SupabaseService
   ) {}
 
   async createUser(request: RegisterSellerDto): Promise<Seller> {
@@ -188,24 +191,16 @@ export class SellerService {
         throw new UnauthorizedException("User not Found");
       }
 
-      const uploadDir = path.join(
-        process.cwd(),
-        "uploads/seller/picture"
+      const fileUrl = await this.supabaseService.uploadFile(
+        `seller/picture/${userId}`,
+        file
       );
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
 
-      const fileExtension = path.extname(file.originalname);
-      const filename = `${userId}${fileExtension}`;
-      const uploadPath = path.join(uploadDir, filename);
-
-      fs.writeFileSync(uploadPath, file.buffer);
-      user.picture = uploadPath;
+      user.picture = fileUrl;
       await this.userRepository.save(user);
-      //   console.log(user);
       return user;
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException(error);
     }
   }
@@ -219,22 +214,13 @@ export class SellerService {
         throw new UnauthorizedException("User not Found");
       }
 
-      const uploadDir = path.join(
-        process.cwd(),
-        "uploads/seller/identity"
+      const fileUrl = await this.supabaseService.uploadFile(
+        `seller/identity/${userId}`,
+        file
       );
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
 
-      const fileExtension = path.extname(file.originalname);
-      const filename = `${userId}${fileExtension}`;
-      const uploadPath = path.join(uploadDir, filename);
-
-      fs.writeFileSync(uploadPath, file.buffer);
-      user.identity_picture = uploadPath;
+      user.identity_picture = fileUrl;
       await this.userRepository.save(user);
-      //   console.log(user);
       return user;
     } catch (error) {
       throw new InternalServerErrorException(error);
@@ -280,6 +266,68 @@ export class SellerService {
 
       await this.addressRepository.save(address);
       return address;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async getAddress(userId: string): Promise<SellerAddress[]> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      const addresses = await this.addressRepository.find({
+        where: { sellerId: userId },
+      });
+
+      return addresses;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async getAddressByAddressId(
+    userId: string,
+    addressId: string
+  ): Promise<SellerAddress> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      const address = await this.addressRepository.findOne({
+        where: { id: addressId, sellerId: userId },
+      });
+      if (!address) {
+        throw new NotFoundException("Address not Found");
+      }
+
+      return address;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async getOneSeller(userId: string): Promise<Omit<Seller, 'password'>> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+      const { password, ...result } = user;
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async getAllSellers(): Promise<Omit<Seller, 'password'>[]> {
+    try {
+      const users = await this.userRepository.find();
+      return users.map(({ password, ...result }) => result);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

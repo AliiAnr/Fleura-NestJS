@@ -12,6 +12,7 @@ import { JwtLoginModule } from "src/auth/jwt/module/jwt.module";
 import { StoreAddress } from "./entity/seller.address.entity";
 import { Product } from "src/product/entity/product.entity";
 import { Order } from "src/order/entity/order.entity";
+import { SupabaseService } from "src/supabase/supabase.service";
 
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import { Order } from "src/order/entity/order.entity";
     JwtLoginModule,
   ],
   controllers: [StoreController],
-  providers: [JwtLoginStrategy, StoreService],
+  providers: [JwtLoginStrategy, StoreService,SupabaseService],
 })
 export class StoreModule {}

@@ -18,6 +18,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { ProductCategory } from "../entity/product-category.entity";
+import { SupabaseService } from "src/supabase/supabase.service";
 @Injectable()
 export class ProductService {
   constructor(
@@ -31,7 +32,8 @@ export class ProductService {
     @InjectRepository(ProductPicture)
     private readonly productPictureRepository: Repository<ProductPicture>,
     @InjectRepository(ProductCategory)
-    private readonly productCategoryRepository: Repository<ProductCategory>
+    private readonly productCategoryRepository: Repository<ProductCategory>,
+    private readonly supabaseService: SupabaseService
   ) {}
 
   async createProduct(
@@ -112,7 +114,6 @@ export class ProductService {
     pictureId: string
   ): Promise<Product> {
     try {
-      console.log("here");
       const product = await this.productRepository.findOne({
         where: { id: productId },
         relations: ["picture"],
@@ -126,10 +127,12 @@ export class ProductService {
         throw new UnauthorizedException("Picture not Found");
       }
 
-      // Hapus file dari sistem file
-      if (fs.existsSync(picture.path)) {
-        fs.unlinkSync(picture.path);
-      }
+      // Hapus file dari Supabase
+      const filePath = picture.path.split(
+        `/storage/v1/object/public/${process.env.SUPABASE_BUCKET}/`
+      )[1];
+      // console.log(`File path to delete: ${filePath}`);
+      await this.supabaseService.deleteFile(filePath);
 
       // Hapus entri gambar dari produk
       product.picture = product.picture.filter((pic) => pic.id !== pictureId);
@@ -148,12 +151,7 @@ export class ProductService {
     productId: string,
     files: Multer.File[]
   ): Promise<Product> {
-    // console.log(files);
-    // console.log(productId);
-    // console.log(userId);
-    // console.log(files);
     try {
-      // console.log(productId);
       const store = await this.storeRepository.findOne({
         where: { sellerId: userId },
       });
@@ -169,29 +167,19 @@ export class ProductService {
         throw new UnauthorizedException("Product not Found");
       }
 
-      const uploadDir = path.join(process.cwd(), "uploads", "product/picture");
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
+      const pictures = await Promise.all(
+        files.map(async (file) => {
+          const fileUrl = await this.supabaseService.uploadFile(
+            `product/picture/${product.id}`,
+            file
+          );
 
-      const pictures = files.map((file) => {
-        const fileExtension = path.extname(file.originalname);
-        const filename = `${uuidv4()}${fileExtension}`;
-        // console.log(filename);
-        // console.log(productId)
-        const uploadPath = path.join(uploadDir, filename);
-
-        // Menulis file ke direktori uploads/products
-        fs.writeFileSync(uploadPath, file.buffer);
-
-        const picture = new ProductPicture();
-        picture.product = product;
-        picture.path = uploadPath; // Simpan nama file
-        return picture;
-      });
-
-      // console.log(pictures);
-      // console.log(product);
+          const picture = new ProductPicture();
+          picture.product = product;
+          picture.path = fileUrl; // Simpan URL file
+          return picture;
+        })
+      );
 
       product.picture.push(...pictures); // Pastikan ini sesuai dengan relasi di entitas Product
       await this.productRepository.save(product);
@@ -262,5 +250,50 @@ export class ProductService {
     } catch (error) {
       throw new UnauthorizedException("Failed to delete product category");
     }
+  }
+
+  async getProductByProductId(productId: string): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+      relations: ["store", "category", "picture"],
+    });
+    if (!product) {
+      throw new UnauthorizedException("Product not Found");
+    }
+    return product;
+  }
+
+  async getProductsByStoreId(storeId: string): Promise<Product[]> {
+    const products = await this.productRepository.find({
+      where: { store: { id: storeId } },
+      relations: ["store", "category", "picture"],
+    });
+    return products;
+  }
+
+  async getAllProducts(): Promise<Product[]> {
+    const products = await this.productRepository.find({
+      relations: ["store", "category", "picture"],
+    });
+    return products;
+  }
+
+  async getProductByCategory(categoryId: string): Promise<Product[]> {
+    const products = await this.productRepository.find({
+      where: { category: { id: categoryId } },
+      relations: ["store", "category", "picture"],
+    });
+    return products;
+  }
+
+  async getProductByCategoryIdandStoreId(
+    categoryId: string,
+    storeId: string
+  ): Promise<Product[]> {
+    const products = await this.productRepository.find({
+      where: { category: { id: categoryId }, store: { id: storeId } },
+      relations: ["store", "category", "picture"],
+    });
+    return products;
   }
 }

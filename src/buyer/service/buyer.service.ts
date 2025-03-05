@@ -44,7 +44,6 @@ export class BuyerService {
     }
   }
 
-
   async getUserById(userId: string): Promise<Buyer> {
     try {
       const user = await this.userRepository.findOneBy({ id: userId });
@@ -247,6 +246,46 @@ export class BuyerService {
       await this.addressRepository.remove(address);
     } catch (error) {
       throw new InternalServerErrorException("Failed to delete address.");
+    }
+  }
+
+  async getAddress(userId: string): Promise<BuyerAddress[]> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      const addresses = await this.addressRepository.find({
+        where: { buyer: { id: userId } },
+      });
+
+      return addresses;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async getAddressByAddressId(
+    userId: string,
+    addressId: string
+  ): Promise<BuyerAddress> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+
+      const address = await this.addressRepository.findOne({
+        where: { id: addressId, buyer: { id: userId } },
+      });
+      if (!address) {
+        throw new NotFoundException("Address not Found");
+      }
+
+      return address;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
   }
 }

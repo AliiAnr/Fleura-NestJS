@@ -29,6 +29,7 @@ import { AdminModule } from './admin/admin.module';
 import { Admin } from "./admin/entity/admin.entity";
 import { RedisModule } from './redis/redis.module';
 import { CartModule } from './cart/cart.module';
+import { SupabaseModule } from './supabase/supabase.module';
 
 @Module({
   imports: [
@@ -104,6 +105,7 @@ import { CartModule } from './cart/cart.module';
     AdminModule,
     RedisModule,
     CartModule,
+    SupabaseModule,
   ],
 })
 export class AppModule {}

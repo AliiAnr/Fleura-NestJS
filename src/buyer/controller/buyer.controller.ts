@@ -56,7 +56,7 @@ export class BuyerController {
 
   @Get("detail/:userId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer","admin")
+  @Roles("buyer", "admin")
   async getUserById(
     @Req() req: any,
     @Param("userId") userId: string
@@ -70,7 +70,7 @@ export class BuyerController {
       } else {
         return new ResponseWrapper(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve user",
+          "Failed to retrieve user"
         );
       }
     }
@@ -80,7 +80,6 @@ export class BuyerController {
   @Roles("admin")
   async getUsers(
     @Req() req: any,
-    @Param("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
     try {
       const users = await this.userService.getAllUsers();
@@ -91,12 +90,54 @@ export class BuyerController {
       } else {
         return new ResponseWrapper(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve user",
+          "Failed to retrieve user"
         );
       }
     }
   }
 
+  @Get("address")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer")
+  async getBuyerAddress(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const addresses = await this.userService.getAddress(req.user.id);
+      return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to retrieve address"
+        );
+      }
+    }
+  }
+  @Get("address/detail/:addressId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer")
+  async getBuyerAddres(
+    @Req() req: any,
+    @Param("addressId") addressId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const addresses = await this.userService.getAddressByAddressId(
+        req.user.id,
+        addressId
+      );
+      return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to retrieve address"
+        );
+      }
+    }
+  }
 
   @Put("username")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)

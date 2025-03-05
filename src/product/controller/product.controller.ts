@@ -2,8 +2,10 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   Inject,
+  Param,
   Post,
   Put,
   Req,
@@ -56,6 +58,57 @@ export class ProductController {
     }
   }
 
+  @Get()
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin", "buyer")
+  async getProducts(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const products = await this.productService.getAllProducts();
+      return new ResponseWrapper(HttpStatus.OK, "Success", products);
+    } catch (error) {
+      return new ResponseWrapper(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to get products"
+      );
+    }
+  }
+
+  @Get("store/:storeId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin", "buyer")
+  async getProductsByStore(
+    @Req() req: any,
+    @Param("storeId") storeId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const products = await this.productService.getProductsByStoreId(storeId);
+      return new ResponseWrapper(HttpStatus.OK, "Success", products);
+    } catch (error) {
+      return new ResponseWrapper(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to get products"
+      );
+    }
+  }
+
+  @Get("detail/:productId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin", "buyer")
+  async getProductDetail(
+    @Req() req: any,
+    @Param("productId") productId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const product = await this.productService.getProductByProductId(productId);
+      return new ResponseWrapper(HttpStatus.OK, "Success", product);
+    } catch (error) {
+      return new ResponseWrapper(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to get product detail"
+      );
+    }
+  }
+
   @Put()
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller")
@@ -69,10 +122,7 @@ export class ProductController {
         req.body.productId,
         request
       );
-      return new ResponseWrapper(
-        HttpStatus.OK,
-        "Product updated successfully"
-      );
+      return new ResponseWrapper(HttpStatus.OK, "Product updated successfully");
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
@@ -91,7 +141,6 @@ export class ProductController {
   async deletePicture(
     @Body() request: DeletePictureDto
   ): Promise<ResponseWrapper<any>> {
-
     try {
       const deletePicture = await this.productService.DeletePictureById(
         request.product_id,
@@ -167,9 +216,9 @@ export class ProductController {
     }
   }
 
-  @Put('category')
+  @Put("category")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles('seller')
+  @Roles("seller")
   async updateProductCategory(
     @Req() req: any,
     @Body() request: UpdateProductCategoryDto
@@ -182,7 +231,7 @@ export class ProductController {
       );
       return new ResponseWrapper(
         HttpStatus.OK,
-        'Product category updated successfully'
+        "Product category updated successfully"
       );
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -190,14 +239,14 @@ export class ProductController {
       } else {
         return new ResponseWrapper(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          'Failed to update product category'
+          "Failed to update product category"
         );
       }
     }
   }
-  @Delete('category')
+  @Delete("category")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles('seller')
+  @Roles("seller")
   async deleteProductCategory(
     @Req() req: any,
     @Body() request: { product_id: string }
@@ -209,7 +258,7 @@ export class ProductController {
       );
       return new ResponseWrapper(
         HttpStatus.OK,
-        'Product category deleted successfully'
+        "Product category deleted successfully"
       );
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -217,7 +266,7 @@ export class ProductController {
       } else {
         return new ResponseWrapper(
           HttpStatus.INTERNAL_SERVER_ERROR,
-          'Failed to delete product category'
+          "Failed to delete product category"
         );
       }
     }

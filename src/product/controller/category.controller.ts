@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   Inject,
   Post,
@@ -64,6 +65,23 @@ export class CategoryController {
       return new ResponseWrapper(
         HttpStatus.INTERNAL_SERVER_ERROR,
         "Failed to delete category"
+      );
+    }
+  }
+
+  @Get()
+  async getAllCategory(): Promise<ResponseWrapper<any>> {
+    try {
+      const categories = await this.categoryService.getAllCategory();
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        "Get all category successfully",
+        categories
+      );
+    } catch (error) {
+      return new ResponseWrapper(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        "Failed to get all category"
       );
     }
   }

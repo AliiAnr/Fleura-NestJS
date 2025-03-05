@@ -2,9 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpException,
   HttpStatus,
   Inject,
+  Param,
   Post,
   Put,
   Req,
@@ -55,22 +57,40 @@ export class ReviewController {
       );
     }
   }
+  @Get("product/:productId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer","seller","admin")
+  async getReviewByProductId(
+    @Req() req: any,
+    @Param("productId") productId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const review = await this.reviewService.getReviewByProductId(productId);
+      return new ResponseWrapper(HttpStatus.OK, "Review found", review);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
 
-  // @Delete()
-  // async deleteCategory(
-  //   @Body() request: { category_id: string }
-  // ): Promise<ResponseWrapper<any>> {
-  //   try {
-  //     await this.categoryService.deleteCategory(request.category_id);
-  //     return new ResponseWrapper(
-  //       HttpStatus.OK,
-  //       "Category deleted successfully"
-  //     );
-  //   } catch (error) {
-  //     return new ResponseWrapper(
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //       "Failed to delete category"
-  //     );
-  //   }
-  // }
+  @Get("buyer/:buyerId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer","seller","admin")
+  async getReviewByBuyerId(
+    @Req() req: any,
+    @Param("buyerId") buyerId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const review = await this.reviewService.getReviewByBuyerId(buyerId);
+      return new ResponseWrapper(HttpStatus.OK, "Review found", review);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+  
 }

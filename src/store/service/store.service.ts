@@ -15,6 +15,7 @@ import * as fs from "fs";
 import { Multer } from "multer";
 import { UpdateStoreAddressDto } from "../dto/update.store-address.dto";
 import { StoreAddress } from "../entity/seller.address.entity";
+import { SupabaseService } from "src/supabase/supabase.service";
 
 @Injectable()
 export class StoreService {
@@ -26,6 +27,7 @@ export class StoreService {
     private readonly storeRepository: Repository<Store>,
     @InjectRepository(StoreAddress)
     private readonly addressRepository: Repository<StoreAddress>,
+    private readonly supabaseService: SupabaseService
   ) {}
 
   async updateStore(userId: string, request: UpdateStoreDto): Promise<Store> {
@@ -72,22 +74,13 @@ export class StoreService {
         throw new UnauthorizedException("Store not Found");
       }
 
-      const uploadDir = path.join(
-        process.cwd(),
-        "uploads/store/picture"
+      const fileUrl = await this.supabaseService.uploadFile(
+        `store/picture/${store.id}`,
+        file
       );
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
 
-      const fileExtension = path.extname(file.originalname);
-      const filename = `${store.id}${fileExtension}`;
-      const uploadPath = path.join(uploadDir, filename);
-
-      fs.writeFileSync(uploadPath, file.buffer);
-      store.picture = uploadPath;
+      store.picture = fileUrl;
       await this.storeRepository.save(store);
-      //   console.log(user);
       return store;
     } catch (error) {
       throw new InternalServerErrorException(error);
@@ -100,19 +93,13 @@ export class StoreService {
         throw new UnauthorizedException("Store not Found");
       }
 
-      const uploadDir = path.join(process.cwd(), "uploads/store/logo");
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
+      const fileUrl = await this.supabaseService.uploadFile(
+        `store/logo/${store.id}`,
+        file
+      );
 
-      const fileExtension = path.extname(file.originalname);
-      const filename = `${store.id}${fileExtension}`;
-      const uploadPath = path.join(uploadDir, filename);
-
-      fs.writeFileSync(uploadPath, file.buffer);
-      store.logo = uploadPath;
+      store.logo = fileUrl;
       await this.storeRepository.save(store);
-      //   console.log(user);
       return store;
     } catch (error) {
       throw new InternalServerErrorException(error);

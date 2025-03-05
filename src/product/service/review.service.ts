@@ -81,9 +81,42 @@ export class ReviewService {
     try {
       const result = await this.productReviewRepository.save(review);
       // console.log(result);
-      return result
+      return result;
     } catch (error) {
       throw new InternalServerErrorException("Failed to create review");
     }
+  }
+
+  async getReviewByProductId(productId: string): Promise<ProductReview[]> {
+    const product = await this.productRepository.findOne({
+      where: { id: productId },
+    });
+    if (!product) {
+      throw new NotFoundException("Product not found");
+    }
+
+    const reviews = await this.productReviewRepository.find({
+      where: { product },
+
+    });
+
+    return reviews;
+  }
+
+  async getReviewByBuyerId(buyerId: string): Promise<ProductReview[]> {
+    const buyer = await this.buyerRepository.findOne({
+      where: { id: buyerId },
+    });
+    // console.log(buyer);
+    if (!buyer) {
+      throw new NotFoundException("Buyer not found");
+    }
+
+    const reviews = await this.productReviewRepository.find({
+      where: { buyerId: buyer.id },
+    });
+    // console.log(reviews);
+
+    return reviews;
   }
 }
