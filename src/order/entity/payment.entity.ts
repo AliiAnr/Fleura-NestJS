@@ -18,7 +18,7 @@ import { Order } from "./order.entity";
 export enum PaymentMethod {
   QRIS = "qris",
   CASH = "cash",
-  REDEEM = "redeem",
+  POINT = "point",
 }
 
 export enum PaymentStatus {

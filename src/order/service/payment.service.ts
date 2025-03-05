@@ -235,6 +235,54 @@ export class PaymentService {
     return { message: "Cash transaction created successfully" };
   }
 
+  async createPointTransaction(orderId: string) {
+    const existingPayment = await this.paymentRepository.findOne({
+      where: { orderId },
+    });
+
+    if (existingPayment) {
+      throw new HttpException(
+        { message: "Payment already exists", payment: existingPayment },
+        HttpStatus.CONFLICT
+      );
+    }
+
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ["buyer", "orderItems", "orderItems.product"],
+    });
+
+    if (!order) {
+      throw new InternalServerErrorException("Order not found");
+    }
+
+    const buyer = order.buyer;
+    const totalPoint = order.point;
+    const buyerPoint = buyer.point;
+
+    if (buyerPoint < totalPoint) {
+      throw new HttpException(
+        { message: "Insufficient point", point: buyerPoint },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const newPoint = buyerPoint - totalPoint;
+    buyer.point = newPoint;
+    await this.buyerRepository.save(buyer);
+
+    const payment = this.paymentRepository.create({
+      status: PaymentStatus.PAID,
+      methode: PaymentMethod.POINT,
+      orderId: orderId,
+    });
+
+    await this.paymentRepository.save(payment);
+
+    return { message: "Point transaction created successfully" };
+  }
+
+
   async updatePaymentStatus(orderId: string, status: PaymentStatus) {
     const payment = await this.paymentRepository.findOne({
       where: { orderId },

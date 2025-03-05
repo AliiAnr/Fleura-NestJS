@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Buyer } from "src/buyer/entity/buyer.entity";
 import { Product } from "src/product/entity/product.entity";
@@ -8,6 +13,7 @@ import { Order, OrderStatus } from "../entity/order.entity";
 import { OrderItem } from "../entity/order-item.entity";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { BuyerAddress } from "src/buyer/entity/buyer.address.entity";
+import { Payment, PaymentMethod } from "../entity/payment.entity";
 
 @Injectable()
 export class OrderService {
@@ -20,6 +26,8 @@ export class OrderService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    @InjectRepository(Payment)
+    private readonly paymentRepository: Repository<Payment>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
     @InjectRepository(BuyerAddress)
@@ -90,6 +98,10 @@ export class OrderService {
       (sum, item) => sum + item.product.price * item.quantity,
       0
     );
+    const totalPoint = orderItems.reduce(
+      (sum, item) => sum + item.product.point * item.quantity,
+      0
+    );
 
     // Update order dengan store, orderItems, dan total harga
     order.store = store;
@@ -102,6 +114,8 @@ export class OrderService {
       order.total = total;
     }
 
+    order.point = totalPoint;
+
     return this.orderRepository.save(order);
   }
 
@@ -112,6 +126,7 @@ export class OrderService {
       relations: ["orderItems", "orderItems.product"],
     });
   }
+
   async getOrdersByStore(StoreId: string) {
     return this.orderRepository.find({
       where: { store: { id: StoreId } },
@@ -129,85 +144,119 @@ export class OrderService {
   async updateOrderStatus(orderId: string, status: OrderStatus) {
     const order = await this.orderRepository.findOne({
       where: { id: orderId },
+      relations: ["buyer"],
     });
+    // console.log(order);
 
     if (!order) {
       throw new NotFoundException("Order not found");
     }
 
-    order.status = status;
-    return this.orderRepository.save(order);
-  }
+    if (order.status === status) {
+      throw new HttpException(
+        { message: "Order status is already the same" },
+        HttpStatus.BAD_REQUEST
+      );
+    }
 
-  async createOrderByRedeeemPoint(buyerId: string, request: CreateOrderDto) {
+    const Payment = await this.paymentRepository.findOne({
+      where: { orderId: orderId },
+    });
+
     const buyer = await this.buyerRepository.findOne({
-      where: { id: buyerId },
+      where: { id: order.buyer.id },
     });
-    if (!buyer) {
-      throw new Error("Buyer not found");
-    }
 
-    // Buat order terlebih dahulu (tanpa orderItems)
-    const order = this.orderRepository.create({ buyer });
-    await this.orderRepository.save(order);
+    console.log(status);
+    console.log(Payment);
 
-    // const order = new Order();
-    // order.buyer = buyer;
-
-    if (request.taken_method === "delivery") {
-      const userAddress = await this.buyerAddressRepository.findOne({
-        where: { id: request.addressId, buyer: { id: buyerId } },
-      });
-      if (!userAddress) {
-        throw new NotFoundException("Address not found");
+    order.status = status;
+    if (Payment) {
+      if (Payment.methode === PaymentMethod.POINT) {
+        return this.orderRepository.save(order);
       }
-      // order.address = userAddress;
-      order.addressId = userAddress.id;
     }
-
-    // console.log(order);
-
-    // Ambil semua produk dalam sekali query untuk menghindari banyak request ke database
-    const productIds = request.items.map((item) => item.productId);
-    const products = await this.productRepository.find({
-      where: productIds.map((id) => ({ id })),
-      relations: ["store"],
-    });
-
-    if (products.length !== productIds.length) {
-      throw new Error("Some products were not found");
+    if (status === OrderStatus.COMPLETED) {
+      const earnedPoint = Math.floor(order.total * 0.001);
+      console.log(earnedPoint);
+      buyer.point += earnedPoint;
+      console.log(buyer.point);
+      // console.log(earnedPoint);
+      await this.buyerRepository.save(buyer);
     }
-
-    // Validasi semua produk berasal dari store yang sama
-    const store = products[0].store;
-    if (!products.every((product) => product.store.id === store.id)) {
-      throw new Error("All products must be from the same store");
-    }
-
-    // Buat orderItems
-    const orderItems = request.items.map((item) => {
-      const product = products.find((p) => p.id === item.productId);
-      return this.orderItemRepository.create({
-        order,
-        product,
-        quantity: item.quantity,
-      });
-    });
-
-    await this.orderItemRepository.save(orderItems);
-
-    // Hitung total harga
-    const totalPoint = orderItems.reduce(
-      (sum, item) => sum + item.product.point * item.quantity,
-      0
-    );
-
-    // Update order dengan store, orderItems, dan total harga
-    order.store = store;
-    order.orderItems = orderItems;
-    order.taken_method = request.taken_method;
-    order.total = totalPoint;
 
     return this.orderRepository.save(order);
   }
+
+  // async createOrderByRedeeemPoint(buyerId: string, request: CreateOrderDto) {
+  //   const buyer = await this.buyerRepository.findOne({
+  //     where: { id: buyerId },
+  //   });
+  //   if (!buyer) {
+  //     throw new Error("Buyer not found");
+  //   }
+
+  //   // Buat order terlebih dahulu (tanpa orderItems)
+  //   const order = this.orderRepository.create({ buyer });
+  //   await this.orderRepository.save(order);
+
+  //   // const order = new Order();
+  //   // order.buyer = buyer;
+
+  //   if (request.taken_method === "delivery") {
+  //     const userAddress = await this.buyerAddressRepository.findOne({
+  //       where: { id: request.addressId, buyer: { id: buyerId } },
+  //     });
+  //     if (!userAddress) {
+  //       throw new NotFoundException("Address not found");
+  //     }
+  //     // order.address = userAddress;
+  //     order.addressId = userAddress.id;
+  //   }
+
+  //   // console.log(order);
+
+  //   // Ambil semua produk dalam sekali query untuk menghindari banyak request ke database
+  //   const productIds = request.items.map((item) => item.productId);
+  //   const products = await this.productRepository.find({
+  //     where: productIds.map((id) => ({ id })),
+  //     relations: ["store"],
+  //   });
+
+  //   if (products.length !== productIds.length) {
+  //     throw new Error("Some products were not found");
+  //   }
+
+  //   // Validasi semua produk berasal dari store yang sama
+  //   const store = products[0].store;
+  //   if (!products.every((product) => product.store.id === store.id)) {
+  //     throw new Error("All products must be from the same store");
+  //   }
+
+  //   // Buat orderItems
+  //   const orderItems = request.items.map((item) => {
+  //     const product = products.find((p) => p.id === item.productId);
+  //     return this.orderItemRepository.create({
+  //       order,
+  //       product,
+  //       quantity: item.quantity,
+  //     });
+  //   });
+
+  //   await this.orderItemRepository.save(orderItems);
+
+  //   // Hitung total harga
+  //   const totalPoint = orderItems.reduce(
+  //     (sum, item) => sum + item.product.point * item.quantity,
+  //     0
+  //   );
+
+  //   // Update order dengan store, orderItems, dan total harga
+  //   order.store = store;
+  //   order.orderItems = orderItems;
+  //   order.taken_method = request.taken_method;
+  //   order.total = totalPoint;
+
+  //   return this.orderRepository.save(order);
+  // }
 }

@@ -17,17 +17,17 @@ import { Order } from "src/order/entity/order.entity";
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([
-      Buyer,
-      OtpBuyer,
-      BuyerAddress,
-      Order,
-    ]),
+    TypeOrmModule.forFeature([Buyer, OtpBuyer, BuyerAddress, Order]),
     MailerModule,
     JwtLoginModule,
     JwtForgotModule,
   ],
   controllers: [BuyerController],
-  providers: [BuyerService, JwtLoginStrategy, JwtForgotStrategy, OtpBuyerService],
+  providers: [
+    BuyerService,
+    JwtLoginStrategy,
+    JwtForgotStrategy,
+    OtpBuyerService,
+  ],
 })
 export class BuyerModule {}

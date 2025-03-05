@@ -25,6 +25,28 @@ export class PaymentController {
     private paymentService: PaymentService
   ) {}
 
+  @Post("point/:orderId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer")
+  async createPointTransaction(
+    @Req() req: any,
+    @Param("orderId") orderId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const transaction =
+        await this.paymentService.createPointTransaction(orderId);
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "Point transaction created successfully"
+      );
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
   @Post("cash/:orderId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("buyer")

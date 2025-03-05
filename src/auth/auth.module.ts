@@ -20,6 +20,9 @@ import { GoogleStrategy } from "./google/google.strategy";
 import { OtpBuyerService } from "./service/otp.buyer.service";
 import { AuthSellerService } from "./service/auth.seller.service";
 import { OtpSellerService } from "./service/otp.seller.service";
+import { Admin } from "src/admin/entity/admin.entity";
+import { AuthAdminService } from "./service/auth.admin.service";
+import { AuthAdminController } from "./controller/auth.admin.controller";
 
 @Module({
   imports: [
@@ -29,7 +32,7 @@ import { OtpSellerService } from "./service/otp.seller.service";
     SellerModule,
     JwtLoginModule,
     JwtForgotModule,
-    TypeOrmModule.forFeature([Buyer, Seller, OtpBuyer, OtpSeller]),
+    TypeOrmModule.forFeature([Admin,Buyer, Seller, OtpBuyer, OtpSeller]),
   ],
   providers: [
     {
@@ -40,6 +43,10 @@ import { OtpSellerService } from "./service/otp.seller.service";
       provide: "AUTH_SELLER_SERVICE",
       useClass: AuthSellerService,
     },
+    {
+      provide: "AUTH_ADMIN_SERVICE",
+      useClass: AuthAdminService,
+    },
     OtpBuyerService,
     OtpSellerService,
     LocalStrategy,
@@ -47,6 +54,6 @@ import { OtpSellerService } from "./service/otp.seller.service";
     JwtForgotStrategy,
     GoogleStrategy,
   ],
-  controllers: [AuthBuyerController, AuthSellerController],
+  controllers: [AuthBuyerController, AuthSellerController, AuthAdminController],
 })
 export class AuthModule {}

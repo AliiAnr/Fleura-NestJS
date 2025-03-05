@@ -40,6 +40,9 @@ export class Order {
 
   @Column({ default: 0 })
   total: number;
+  
+  @Column({ default: 0 })
+  point: number;
 
   @Column({ nullable: true })
   taken_date: Date;

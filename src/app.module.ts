@@ -25,6 +25,10 @@ import { OrderModule } from './order/order.module';
 import { Order } from "./order/entity/order.entity";
 import { OrderItem } from "./order/entity/order-item.entity";
 import { Payment } from "./order/entity/payment.entity";
+import { AdminModule } from './admin/admin.module';
+import { Admin } from "./admin/entity/admin.entity";
+import { RedisModule } from './redis/redis.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -42,6 +46,7 @@ import { Payment } from "./order/entity/payment.entity";
           password: configService.get<string>("DATABASE_PASSWORD"),
           database: configService.get<string>("DATABASE_NAME"),
           entities: [
+            Admin,
             OtpBuyer,
             OtpSeller,
             Buyer,
@@ -96,6 +101,9 @@ import { Payment } from "./order/entity/payment.entity";
     ProductModule,
     StoreModule,
     OrderModule,
+    AdminModule,
+    RedisModule,
+    CartModule,
   ],
 })
 export class AppModule {}

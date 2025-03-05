@@ -44,6 +44,29 @@ export class BuyerService {
     }
   }
 
+
+  async getUserById(userId: string): Promise<Buyer> {
+    try {
+      const user = await this.userRepository.findOneBy({ id: userId });
+      if (!user) {
+        throw new UnauthorizedException("User not Found");
+      }
+      const { password, ...result } = user;
+      return result as Buyer;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async getAllUsers(): Promise<Partial<Buyer>[]> {
+    try {
+      const users = await this.userRepository.find();
+      return users.map(({ password, ...user }) => user);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
   async updateUserName(userId, name): Promise<Buyer> {
     try {
       const userSameName = await this.userRepository.findOne({

@@ -25,6 +25,7 @@ export class AuthBuyerService {
     if (!findUser) {
       throw new UnauthorizedException('User not found');
     }
+    
     const isPasswordValid = await bcrypt.compare(password, findUser.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Wrong Password');

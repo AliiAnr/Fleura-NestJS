@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpStatus,
   NotFoundException,
   Param,
@@ -52,6 +53,50 @@ export class BuyerController {
       );
     }
   }
+
+  @Get("detail/:userId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer","admin")
+  async getUserById(
+    @Req() req: any,
+    @Param("userId") userId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const user = await this.userService.getUserById(userId);
+      return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to retrieve user",
+        );
+      }
+    }
+  }
+  @Get("")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
+  async getUsers(
+    @Req() req: any,
+    @Param("userId") userId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const users = await this.userService.getAllUsers();
+      return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
+      } else {
+        return new ResponseWrapper(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Failed to retrieve user",
+        );
+      }
+    }
+  }
+
 
   @Put("username")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)

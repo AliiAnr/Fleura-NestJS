@@ -99,15 +99,16 @@ export class OrderController {
 
   @Put("status/:id")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller","admin")
   async updateOrderStatus(
     @Req() req: any,
     @Param("id") orderId: string,
     @Body("status") status: OrderStatus
   ): Promise<ResponseWrapper<any>> {
+    // console.log(req.user);
     try {
       const order = await this.orderService.updateOrderStatus(orderId, status);
-      return new ResponseWrapper(HttpStatus.OK, "Order status updated", order);
+      return new ResponseWrapper(HttpStatus.OK, "Order status updated");
     } catch (error) {
       throw new HttpException(
         new ResponseWrapper(error.status, error.message),
