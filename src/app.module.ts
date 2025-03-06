@@ -30,7 +30,7 @@ import { Admin } from "./admin/entity/admin.entity";
 import { RedisModule } from './redis/redis.module';
 import { CartModule } from './cart/cart.module';
 import { SupabaseModule } from './supabase/supabase.module';
-import { NotificationModule } from './notification/notification.module';
+// import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
