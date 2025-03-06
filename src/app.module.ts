@@ -107,7 +107,7 @@ import { NotificationModule } from './notification/notification.module';
     RedisModule,
     CartModule,
     SupabaseModule,
-    NotificationModule,
+    // NotificationModule,
   ],
 })
 export class AppModule {}
