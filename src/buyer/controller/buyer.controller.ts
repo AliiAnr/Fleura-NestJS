@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   NotFoundException,
   Param,
@@ -78,9 +79,7 @@ export class BuyerController {
   @Get("")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("admin")
-  async getUsers(
-    @Req() req: any,
-  ): Promise<ResponseWrapper<any>> {
+  async getUsers(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
       const users = await this.userService.getAllUsers();
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
@@ -98,44 +97,43 @@ export class BuyerController {
 
   @Get("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
-  async getBuyerAddress(@Req() req: any): Promise<ResponseWrapper<any>> {
-    try {
-      const addresses = await this.userService.getAddress(req.user.id);
-      return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve address"
-        );
-      }
-    }
-  }
-  @Get("address/detail/:addressId")
-  @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
-  async getBuyerAddres(
+  @Roles("buyer", "admin")
+  async getBuyerAddress(
     @Req() req: any,
-    @Param("addressId") addressId: string
+    @Query("userId") userId?: string
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      const addresses = await this.userService.getAddress(id);
+      return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
+  @Get("address/detail/:addressId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer", "admin")
+  async getBuyerAddres(
+    @Req() req: any,
+    @Param("addressId") addressId: string,
+    @Query("userId") userId?: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
       const addresses = await this.userService.getAddressByAddressId(
-        req.user.id,
+        id,
         addressId
       );
       return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve address"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
