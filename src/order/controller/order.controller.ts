@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from "@nestjs/common";
@@ -28,13 +29,15 @@ export class OrderController {
 
   @Post()
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async createOrder(
     @Req() req: any,
-    @Body() request: CreateOrderDto
+    @Body() request: CreateOrderDto,
+    @Query("buyerId") buyerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      const order = await this.orderService.createOrder(req.user.id, request);
+      const id = req.user.role === "admin" && buyerId ? buyerId : req.user.id;
+      const order = await this.orderService.createOrder(id, request);
       return new ResponseWrapper(HttpStatus.CREATED, "Order created");
     } catch (error) {
       throw new HttpException(
@@ -46,7 +49,7 @@ export class OrderController {
 
   @Get("detail/:id")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer", "seller")
+  @Roles("buyer", "seller", "admin")
   async getOrderById(
     @Req() req: any,
     @Param("id") orderId: string
@@ -65,10 +68,14 @@ export class OrderController {
 
   @Get("buyer")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
-  async getOrders(@Req() req: any): Promise<ResponseWrapper<any>> {
+  @Roles("buyer", "admin")
+  async getOrders(
+    @Req() req: any,
+    @Query("buyerId") buyerId: string
+  ): Promise<ResponseWrapper<any>> {
     // console.log(req.user);
     try {
+      const id = req.user.role === "admin" && buyerId ? buyerId : req.user.id;
       const orders = await this.orderService.getOrdersByBuyerId(req.user.id);
       return new ResponseWrapper(HttpStatus.OK, "Orders retrieved", orders);
     } catch (error) {
@@ -81,7 +88,7 @@ export class OrderController {
 
   @Get("store/:id")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller","admin")
   async getOrderByStore(
     @Req() req: any,
     @Param(":id") storeId: string
@@ -99,7 +106,7 @@ export class OrderController {
 
   @Put("status/:id")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller","admin")
+  @Roles("seller", "admin")
   async updateOrderStatus(
     @Req() req: any,
     @Param("id") orderId: string,

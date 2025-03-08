@@ -2,8 +2,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
   HttpStatus,
+  Param,
   Put,
+  Query,
   Req,
   UnauthorizedException,
   UploadedFile,
@@ -26,36 +29,35 @@ export class StoreController {
 
   @Put()
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   async updateSellerAddress(
     @Req() req: any,
-    @Body() updateStoreDto: UpdateStoreDto
+    @Body() updateStoreDto: UpdateStoreDto,
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
       const updatedAddress = await this.storeService.updateStore(
-        req.user.id,
+        id,
         updateStoreDto
       );
-      return new ResponseWrapper(HttpStatus.OK, "Store update successful");
+      return new ResponseWrapper(HttpStatus.CREATED, "Store update successful");
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to update address"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
   @Put("picture")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   @UseInterceptors(FileInterceptor("file"))
   async uploadPicture(
     @Req() req: any,
-    @UploadedFile() file: Multer.File
+    @UploadedFile() file: Multer.File,
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 500 * 1024; // 500 KB
     if (file.size > maxSize) {
@@ -66,32 +68,27 @@ export class StoreController {
     }
 
     try {
-      const updatedSeller = await this.storeService.uploadPicture(
-        req.user.id,
-        file
-      );
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
+      const updatedSeller = await this.storeService.uploadPicture(id, file);
       return new ResponseWrapper(
-        HttpStatus.OK,
+        HttpStatus.CREATED,
         "Store picture upload successful"
       );
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to upload store picture"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
   @Put("logo")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   @UseInterceptors(FileInterceptor("file"))
   async uploadLogo(
     @Req() req: any,
-    @UploadedFile() file: Multer.File
+    @UploadedFile() file: Multer.File,
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 500 * 1024; // 500 KB
     if (file.size > maxSize) {
@@ -102,63 +99,79 @@ export class StoreController {
     }
 
     try {
-      const updatedSeller = await this.storeService.uploadLogo(
-        req.user.id,
-        file
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
+      const updatedSeller = await this.storeService.uploadLogo(id, file);
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "Store logo upload successful"
       );
-      return new ResponseWrapper(HttpStatus.OK, "Store logo upload successful");
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to upload store logo"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
-  @Get()
-  @UseGuards(JwtLoginAuthGuard)
-  // @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  // @Roles("seller")
-  async getStore(@Req() req: any): Promise<ResponseWrapper<any>> {
-    try {
-      const store = await this.storeService.getStore(req.user.id);
-      return new ResponseWrapper(HttpStatus.OK, "Store details", store);
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to get store details"
-        );
-      }
-    }
-  }
-  @Put("address")
+  @Get("detail/:storeId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
-  async updateStoreAddress(
+  @Roles("seller", "buyer", "admin")
+  async getStore(
     @Req() req: any,
-    @Body() updateStoreAddressDto: UpdateStoreAddressDto
+    @Param("storeId") storeId: string
   ): Promise<ResponseWrapper<any>> {
     try {
+      const store = await this.storeService.getStoreByStoreId(storeId);
+      return new ResponseWrapper(HttpStatus.OK, "Store details", store);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
+  @Get("")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "buyer", "admin")
+  async getAllStore(
+    @Req() req: any
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const store = await this.storeService.getAllStore();
+      return new ResponseWrapper(HttpStatus.OK, "Store details", store);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
+
+
+  @Put("address")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin")
+  async updateStoreAddress(
+    @Req() req: any,
+    @Body() updateStoreAddressDto: UpdateStoreAddressDto,
+    @Query("sellerId") sellerId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
       const updatedAddress = await this.storeService.updateStoreAddress(
-        req.user.id,
+        id,
         updateStoreAddressDto
       );
-      return new ResponseWrapper(HttpStatus.OK, "Address update successful");
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "Address update successful"
+      );
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to update address"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 }

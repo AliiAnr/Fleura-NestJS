@@ -118,48 +118,69 @@ export class StoreService {
     }
   }
 
+  async getStoreByStoreId(storeId: string): Promise<Partial<Store>> {
+    try {
+      const store = await this.storeRepository.findOneBy({ id: storeId });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
+      }
+      const { id, sellerId, ...storeData } = store;
+      return storeData;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async getAllStore(): Promise<Store[]> {
+    try {
+      const stores = await this.storeRepository.find();
+      return stores;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
 
   async updateStoreAddress(
-      userId: string,
-      updateSellerAddressDto: UpdateStoreAddressDto
-    ): Promise<StoreAddress> {
-      try {
-        const store = await this.storeRepository.findOneBy({ sellerId: userId });
-        if (!store) {
-          throw new UnauthorizedException("Store not Found");
-        }
-  
-        let address = await this.addressRepository.findOneBy({
-          storeId: store.id,
-        });
-        if (!address) {
-          address = new StoreAddress();
-          address.storeId = store.id;
-        }
-  
-        if (updateSellerAddressDto.postcode) {
-          address.postcode = updateSellerAddressDto.postcode;
-        }
-        if (updateSellerAddressDto.road) {
-          address.road = updateSellerAddressDto.road;
-        }
-        if (updateSellerAddressDto.province) {
-          address.province = updateSellerAddressDto.province;
-        }
-        if (updateSellerAddressDto.city) {
-          address.city = updateSellerAddressDto.city;
-        }
-        if (updateSellerAddressDto.detail) {
-          address.detail = updateSellerAddressDto.detail;
-        }
-        if (updateSellerAddressDto.district) {
-          address.district = updateSellerAddressDto.district;
-        }
-  
-        await this.addressRepository.save(address);
-        return address;
-      } catch (error) {
-        throw new InternalServerErrorException(error);
+    userId: string,
+    updateSellerAddressDto: UpdateStoreAddressDto
+  ): Promise<StoreAddress> {
+    try {
+      const store = await this.storeRepository.findOneBy({ sellerId: userId });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
       }
+
+      let address = await this.addressRepository.findOneBy({
+        storeId: store.id,
+      });
+      if (!address) {
+        address = new StoreAddress();
+        address.storeId = store.id;
+      }
+
+      if (updateSellerAddressDto.postcode) {
+        address.postcode = updateSellerAddressDto.postcode;
+      }
+      if (updateSellerAddressDto.road) {
+        address.road = updateSellerAddressDto.road;
+      }
+      if (updateSellerAddressDto.province) {
+        address.province = updateSellerAddressDto.province;
+      }
+      if (updateSellerAddressDto.city) {
+        address.city = updateSellerAddressDto.city;
+      }
+      if (updateSellerAddressDto.detail) {
+        address.detail = updateSellerAddressDto.detail;
+      }
+      if (updateSellerAddressDto.district) {
+        address.district = updateSellerAddressDto.district;
+      }
+
+      await this.addressRepository.save(address);
+      return address;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
+  }
 }

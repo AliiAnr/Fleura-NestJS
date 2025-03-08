@@ -2,11 +2,13 @@ import {
   Body,
   Controller,
   Get,
+  HttpException,
   HttpStatus,
   NotFoundException,
   Param,
   Post,
   Put,
+  Query,
   Req,
   UnauthorizedException,
   UnprocessableEntityException,
@@ -39,21 +41,12 @@ export class SellerController {
     try {
       const user = await this.userService.createUser(request);
       if (user) {
-        return new ResponseWrapper(HttpStatus.OK, "Register Successful");
+        return new ResponseWrapper(HttpStatus.CREATED, "Register Successful");
       }
     } catch (error) {
-      // Mengembalikan error dalam format ResponseWrapper
-      console.log(error);
-      if (error instanceof UnprocessableEntityException) {
-        return new ResponseWrapper(
-          HttpStatus.UNPROCESSABLE_ENTITY,
-          error.message
-        );
-      }
-      // Tangani jenis error lain jika diperlukan
-      return new ResponseWrapper(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Registration failed"
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
       );
     }
   }
@@ -71,99 +64,101 @@ export class SellerController {
 
   @Put("update")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   async updateSellerPartial(
     @Req() req: any,
-    @Body() updateSellerPartialDto: UpdateSellerPartialDto
+    @Body() updateSellerPartialDto: UpdateSellerPartialDto,
+    @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
       const updatedSeller = await this.userService.updateSellerPartial(
-        req.user.id,
+        id,
         updateSellerPartialDto
       );
       return new ResponseWrapper(HttpStatus.OK, "Seller update successful");
     } catch (error) {
-      if (error instanceof UnprocessableEntityException) {
-        return new ResponseWrapper(
-          HttpStatus.UNPROCESSABLE_ENTITY,
-          error.message
-        );
-      } else if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to update seller"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
   @Get("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
-  async getBuyerAddress(@Req() req: any): Promise<ResponseWrapper<any>> {
+  @Roles("seller", "admin")
+  async getBuyerAddress(
+    @Req() req: any,
+    @Query("userId") userId: string
+  ): Promise<ResponseWrapper<any>> {
     try {
-      const addresses = await this.userService.getAddress(req.user.id);
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      const addresses = await this.userService.getAddress(id);
       return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve address"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
   @Get("address/detail/:addressId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   async getBuyerAddres(
     @Req() req: any,
-    @Param("addressId") addressId: string
+    @Param("addressId") addressId: string,
+    @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
       const addresses = await this.userService.getAddressByAddressId(
-        req.user.id,
+        id,
         addressId
       );
       return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve address"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
   @Put("email")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   async updateEmail(
     @Req() req: any,
-    @Body() body: { email: string }
+    @Body() body: { email: string },
+    @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
-    const access_token = await this.userService.updateEmail(
-      req.user.id,
-      body.email
-    );
-    return new ResponseWrapper(HttpStatus.OK, "Email change Successful", {
-      access_token,
-    });
+    try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      const access_token = await this.userService.updateEmail(id, body.email);
+      if (req.user.role === "admin") {
+        return new ResponseWrapper(HttpStatus.OK, "Email change Successful");
+      }
+      return new ResponseWrapper(HttpStatus.OK, "Email change Successful", {
+        access_token,
+      });
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
   }
+
   @Put("picture")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   @UseInterceptors(FileInterceptor("file"))
   async uploadPicture(
     @Req() req: any,
-    @UploadedFile() file: Multer.File
+    @UploadedFile() file: Multer.File,
+    @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 500 * 1024; // 500 KB
     if (file.size > maxSize) {
@@ -174,29 +169,24 @@ export class SellerController {
     }
 
     try {
-      const updatedSeller = await this.userService.uploadPicture(
-        req.user.id,
-        file
-      );
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      const updatedSeller = await this.userService.uploadPicture(id, file);
       return new ResponseWrapper(HttpStatus.OK, "Picture upload successful");
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to upload picture"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
   @Put("identity")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   @UseInterceptors(FileInterceptor("file"))
   async uploadIdentity(
     @Req() req: any,
-    @UploadedFile() file: Multer.File
+    @UploadedFile() file: Multer.File,
+    @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 500 * 1024; // 500 KB
     if (file.size > maxSize) {
@@ -207,8 +197,9 @@ export class SellerController {
     }
 
     try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
       const updatedSeller = await this.userService.uploadIdentityPicture(
-        req.user.id,
+        id,
         file
       );
       return new ResponseWrapper(
@@ -216,27 +207,12 @@ export class SellerController {
         "Identity picture upload successful"
       );
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to upload identity picture"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
-
-  //   @Put('phone')
-  //   @UseGuards(JwtLoginAuthGuard,RoleGuard)
-  //   @Roles('seller')
-  //   async updatePhone(
-  //     @Req() req: any,
-  //     @Body() body: { phone: string},
-  //   ): Promise<ResponseWrapper<any>> {
-  //     await this.userService.updatePhone(req.user.id, body.phone);
-  //     return new ResponseWrapper(HttpStatus.OK, 'Phone change Successful');
-  //   }
 
   @Post("password/reset")
   @UseGuards(JwtForgotAuthGuard, RoleGuard)
@@ -245,8 +221,15 @@ export class SellerController {
     @Req() req: any,
     @Body() body: { newPassword: string }
   ): Promise<ResponseWrapper<any>> {
-    await this.userService.resetPassword(req.user.id, body.newPassword);
-    return new ResponseWrapper(HttpStatus.OK, "Password Change Successful");
+    try {
+      await this.userService.resetPassword(req.user.id, body.newPassword);
+      return new ResponseWrapper(HttpStatus.OK, "Password Change Successful");
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
   }
 
   @Put("address")
@@ -298,9 +281,7 @@ export class SellerController {
   @Get("")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("admin")
-  async getUsers(
-    @Req() req: any,
-  ): Promise<ResponseWrapper<any>> {
+  async getUsers(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
       const users = await this.userService.getAllSellers();
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);

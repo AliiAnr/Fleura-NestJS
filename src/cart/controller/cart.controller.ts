@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
 } from "@nestjs/common";
@@ -24,13 +25,15 @@ export class CartController {
 
   @Post("save")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async saveCartToRedis(
     @Req() req: any,
-    @Body() cartData: CreateCartDto
+    @Body() cartData: CreateCartDto,
+    @Query("buyerId") buyerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      await this.cartService.saveCartToRedis(req.user.id, cartData);
+      const id = req.user.role === "admin" && buyerId ? buyerId : req.user.id;
+      await this.cartService.saveCartToRedis(id, cartData);
       return new ResponseWrapper(
         HttpStatus.CREATED,
         "Product added Succesfully"
@@ -44,17 +47,16 @@ export class CartController {
   }
   @Put("add/:productId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async increaseProduct(
     @Req() req: any,
-    @Param("productId") productId: string
+    @Param("productId") productId: string,
+    @Query("buyerId") buyerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      await this.cartService.increaseQuantity(req.user.id, productId);
-      return new ResponseWrapper(
-        HttpStatus.OK,
-        "Product Increase Succesfully"
-      );
+      const id = req.user.role === "admin" && buyerId ? buyerId : req.user.id;
+      await this.cartService.increaseQuantity(id, productId);
+      return new ResponseWrapper(HttpStatus.OK, "Product Increase Succesfully");
     } catch (error) {
       throw new HttpException(
         new ResponseWrapper(error.status, error.message),
@@ -64,16 +66,18 @@ export class CartController {
   }
   @Put("reduce/:productId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async decreaseProduct(
     @Req() req: any,
-    @Param("productId") productId: string
+    @Param("productId") productId: string,
+    @Query("buyerId") buyerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      await this.cartService.decreaseQuantity(req.user.id, productId);
+      const id = req.user.role === "admin" && buyerId ? buyerId : req.user.id;
+      await this.cartService.decreaseQuantity(id, productId);
       return new ResponseWrapper(
         HttpStatus.OK,
-        "Product decrease Succesfully"
+        "Product quantity decrease Succesfully"
       );
     } catch (error) {
       throw new HttpException(
@@ -83,16 +87,16 @@ export class CartController {
     }
   }
 
-
-
-
-
   @Get("")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
-  async getCart(@Req() req: any): Promise<ResponseWrapper<any>> {
+  @Roles("buyer", "admin")
+  async getCart(
+    @Req() req: any,
+    @Query("buyerId") buyerId: string
+  ): Promise<ResponseWrapper<any>> {
     try {
-      const cart = await this.cartService.getCart(req.user.id);
+      const id = req.user.role === "admin" && buyerId ? buyerId : req.user.id;
+      const cart = await this.cartService.getCart(id);
       //   console.log(cart[0]);
       return new ResponseWrapper(
         HttpStatus.OK,
@@ -127,9 +131,7 @@ export class CartController {
   @Delete("")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("buyer")
-  async deleteCart(
-    @Req() req: any
-  ): Promise<ResponseWrapper<any>> {
+  async deleteCart(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
       await this.cartService.clearCart(req.user.id);
       return new ResponseWrapper(HttpStatus.OK, "Cart deleted Succesfully");

@@ -36,28 +36,19 @@ export class BuyerController {
     try {
       const user = await this.userService.createUser(request);
       if (user) {
-        return new ResponseWrapper(HttpStatus.OK, "Register Successful");
+        return new ResponseWrapper(HttpStatus.CREATED, "Register Successful");
       }
     } catch (error) {
-      // Mengembalikan error dalam format ResponseWrapper
-      console.log(error);
-      if (error instanceof UnprocessableEntityException) {
-        return new ResponseWrapper(
-          HttpStatus.UNPROCESSABLE_ENTITY,
-          error.message
-        );
-      }
-      // Tangani jenis error lain jika diperlukan
-      return new ResponseWrapper(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Registration failed"
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
       );
     }
   }
 
   @Get("detail/:userId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer", "admin")
+  @Roles("buyer", "admin","seller")
   async getUserById(
     @Req() req: any,
     @Param("userId") userId: string
@@ -66,14 +57,10 @@ export class BuyerController {
       const user = await this.userService.getUserById(userId);
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve user"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
   @Get("")
@@ -84,14 +71,10 @@ export class BuyerController {
       const users = await this.userService.getAllUsers();
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve user"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
@@ -139,40 +122,67 @@ export class BuyerController {
 
   @Put("username")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async updateUsername(
     @Req() req: any,
-    @Body() body: { username: string }
+    @Body() body: { username: string },
+    @Query("userId") userId?: string
   ): Promise<ResponseWrapper<any>> {
-    await this.userService.updateUserName(req.user.id, body.username);
-    return new ResponseWrapper(HttpStatus.OK, "Username change Successful");
+    try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      await this.userService.updateUserName(id, body.username);
+      return new ResponseWrapper(HttpStatus.OK, "Username change Successful");
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
   }
 
   @Put("email")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async updateEmail(
     @Req() req: any,
-    @Body() body: { email: string }
+    @Body() body: { email: string },
+    @Query("userId") userId?: string
   ): Promise<ResponseWrapper<any>> {
-    const access_token = await this.userService.updateEmail(
-      req.user.id,
-      body.email
-    );
-    return new ResponseWrapper(HttpStatus.OK, "Email change Successful", {
-      access_token,
-    });
+    try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      const access_token = await this.userService.updateEmail(id, body.email);
+      if (req.user.role === "admin") {
+        return new ResponseWrapper(HttpStatus.OK, "Email change Successful");
+      }
+      return new ResponseWrapper(HttpStatus.OK, "Email change Successful", {
+        access_token,
+      });
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
   }
 
   @Put("phone")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async updatePhone(
     @Req() req: any,
-    @Body() body: { phone: string }
+    @Body() body: { phone: string },
+    @Query("userId") userId?: string
   ): Promise<ResponseWrapper<any>> {
-    await this.userService.updatePhone(req.user.id, body.phone);
-    return new ResponseWrapper(HttpStatus.OK, "Phone change Successful");
+    try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      await this.userService.updatePhone(id, body.phone);
+      return new ResponseWrapper(HttpStatus.OK, "Phone change Successful");
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
   }
 
   @Post("password/reset")
@@ -182,79 +192,80 @@ export class BuyerController {
     @Req() req: any,
     @Body() body: { newPassword: string }
   ): Promise<ResponseWrapper<any>> {
-    await this.userService.resetPassword(req.user.id, body.newPassword);
-    return new ResponseWrapper(HttpStatus.OK, "Password Change Successful");
+    try {
+      await this.userService.resetPassword(req.user.id, body.newPassword);
+      return new ResponseWrapper(HttpStatus.OK, "Password Change Successful");
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
   }
 
   @Put("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async updateBuyerAddress(
     @Req() req: any,
-    @Body() request: UpdateBuyerAddressDto
+    @Body() request: UpdateBuyerAddressDto,
+    @Query("userId") userId?: string
   ): Promise<ResponseWrapper<any>> {
-    console.log(request.addressId);
+    // console.log(request.addressId);
     try {
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
       const updatedAddress = await this.userService.updateBuyerAddress(
-        req.user.id,
+        id,
         request
       );
       return new ResponseWrapper(HttpStatus.OK, "Address update successful");
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to update address"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
   @Post("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async addBuyerAddress(
     @Req() req: any,
-    @Body() request: CreateBuyerAddressDto
+    @Body() request: CreateBuyerAddressDto,
+    @Query("userId") userId?: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      const updatedAddress = await this.userService.addAddress(
-        req.user.id,
-        request
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      const updatedAddress = await this.userService.addAddress(id, request);
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "Address created successfully"
       );
-      return new ResponseWrapper(HttpStatus.OK, "Address created successfully");
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to create address"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
   @Delete("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer", "admin")
   async deleteAddress(
     @Req() req: any,
-    @Query("id") addressId: string
+    @Query("addressId") addressId: string,
+    @Query("userId") userId?: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      await this.userService.deleteAddress(req.user.id, addressId);
+      const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      await this.userService.deleteAddress(id, addressId);
       return new ResponseWrapper(HttpStatus.OK, "Address deleted successfully");
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to delete address"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 }

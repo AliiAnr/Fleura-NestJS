@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Inject,
   Post,
@@ -34,6 +35,8 @@ export class CategoryController {
   constructor(private categoryService: CategoryService) {}
 
   @Post()
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
   async createCategory(
     @Body() request: CreateCategoryDto
   ): Promise<ResponseWrapper<any>> {
@@ -44,14 +47,16 @@ export class CategoryController {
         "Category created successfully"
       );
     } catch (error) {
-      return new ResponseWrapper(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to create category"
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
       );
     }
   }
 
   @Delete()
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
   async deleteCategory(
     @Body() request: { category_id: string }
   ): Promise<ResponseWrapper<any>> {
@@ -62,14 +67,16 @@ export class CategoryController {
         "Category deleted successfully"
       );
     } catch (error) {
-      return new ResponseWrapper(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to delete category"
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
       );
     }
   }
 
   @Get()
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer", "seller", "admin")
   async getAllCategory(): Promise<ResponseWrapper<any>> {
     try {
       const categories = await this.categoryService.getAllCategory();
@@ -79,9 +86,9 @@ export class CategoryController {
         categories
       );
     } catch (error) {
-      return new ResponseWrapper(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to get all category"
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
       );
     }
   }

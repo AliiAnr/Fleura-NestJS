@@ -3,11 +3,13 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   HttpStatus,
   Inject,
   Param,
   Post,
   Put,
+  Query,
   Req,
   UnauthorizedException,
   UploadedFile,
@@ -35,26 +37,24 @@ export class ProductController {
 
   @Post()
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   async createProduct(
     @Req() req: any,
-    @Body() request: CreateProductDto
+    @Body() request: CreateProductDto,
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      const product = await this.productService.createProduct(
-        req.user.id,
-        request
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
+      const product = await this.productService.createProduct(id, request);
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "Product created successfully"
       );
-      return new ResponseWrapper(HttpStatus.OK, "Product created successfully");
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to create product"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
@@ -66,9 +66,9 @@ export class ProductController {
       const products = await this.productService.getAllProducts();
       return new ResponseWrapper(HttpStatus.OK, "Success", products);
     } catch (error) {
-      return new ResponseWrapper(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to get products"
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
       );
     }
   }
@@ -84,9 +84,9 @@ export class ProductController {
       const products = await this.productService.getProductsByStoreId(storeId);
       return new ResponseWrapper(HttpStatus.OK, "Success", products);
     } catch (error) {
-      return new ResponseWrapper(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to get products"
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
       );
     }
   }
@@ -99,47 +99,47 @@ export class ProductController {
     @Param("productId") productId: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      const product = await this.productService.getProductByProductId(productId);
+      const product =
+        await this.productService.getProductByProductId(productId);
       return new ResponseWrapper(HttpStatus.OK, "Success", product);
     } catch (error) {
-      return new ResponseWrapper(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        "Failed to get product detail"
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
       );
     }
   }
 
   @Put()
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   async updateProduct(
     @Req() req: any,
-    @Body() request: UpdateProductDto
+    @Body() request: UpdateProductDto,
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
       const product = await this.productService.updateProduct(
-        req.user.id,
+        id,
         req.body.productId,
         request
       );
       return new ResponseWrapper(HttpStatus.OK, "Product updated successfully");
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to update product"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
   @Delete("picture")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller","admin")
   async deletePicture(
-    @Body() request: DeletePictureDto
+    @Body() request: DeletePictureDto,
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
       const deletePicture = await this.productService.DeletePictureById(
@@ -151,20 +151,16 @@ export class ProductController {
         "Product picture delete successful"
       );
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to delete product picture"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
   @Post("picture")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   @UseInterceptors(
     FilesInterceptor("files", 10, {
       storage: memoryStorage(), // Menggunakan memoryStorage untuk menyimpan file sementara di memori
@@ -173,7 +169,8 @@ export class ProductController {
   async uploadPicture(
     @Req() req: any,
     @UploadedFiles() files: Multer.File[],
-    @Body() request: { productId: string }
+    @Body() request: { productId: string },
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 500 * 1024; // 500 KB
     for (const f of files) {
@@ -195,65 +192,62 @@ export class ProductController {
     }
 
     try {
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
       const uploadPicture = await this.productService.uploadManyPicture(
-        req.user.id,
+        id,
         request.productId,
         files
       );
       return new ResponseWrapper(
-        HttpStatus.OK,
-        "Store picture upload successful"
+        HttpStatus.CREATED,
+        "Product picture upload successful"
       );
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to upload store picture"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 
   @Put("category")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   async updateProductCategory(
     @Req() req: any,
-    @Body() request: UpdateProductCategoryDto
+    @Body() request: UpdateProductCategoryDto,
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
       const product = await this.productService.updateProductCategory(
-        req.user.id,
+        id,
         request.product_id,
         request.category_id
       );
       return new ResponseWrapper(
-        HttpStatus.OK,
+        HttpStatus.CREATED,
         "Product category updated successfully"
       );
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to update product category"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
   @Delete("category")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller", "admin")
   async deleteProductCategory(
     @Req() req: any,
-    @Body() request: { product_id: string }
+    @Body() request: { product_id: string },
+    @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
     try {
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
       const product = await this.productService.deleteProductCategory(
-        req.user.id,
+        id,
         request.product_id
       );
       return new ResponseWrapper(
@@ -261,14 +255,10 @@ export class ProductController {
         "Product category deleted successfully"
       );
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to delete product category"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 }

@@ -27,7 +27,7 @@ export class PaymentController {
 
   @Post("point/:orderId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer","admin")
   async createPointTransaction(
     @Req() req: any,
     @Param("orderId") orderId: string
@@ -49,7 +49,7 @@ export class PaymentController {
 
   @Post("cash/:orderId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer","admin")
   async createCashTransaction(
     @Req() req: any,
     @Param("orderId") orderId: string
@@ -71,7 +71,7 @@ export class PaymentController {
 
   @Post("qris/:orderId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer")
+  @Roles("buyer","admin")
   async createQrisTransaction(
     @Param("orderId") orderId: string
   ): Promise<ResponseWrapper<any>> {
@@ -101,7 +101,7 @@ export class PaymentController {
 
   @Put("status/:id")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller")
+  @Roles("seller","admin")
   async updateOrderStatus(
     @Req() req: any,
     @Param("id") orderId: string,
