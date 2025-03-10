@@ -11,8 +11,6 @@ import {
 } from "@nestjs/common";
 import { LocalGuard } from "../jwt/guards/local.guard";
 import { GoogleAuthGuard } from "../google/google.guard";
-
-// import { Request } from "express";
 import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
 import { OtpBuyerService } from "../service/otp.buyer.service";
 import { AuthBuyerService } from "../service/auth.buyer.service";
@@ -79,9 +77,13 @@ export class AuthBuyerController {
         body.otpCode,
         body.email
       );
-      return new ResponseWrapper(HttpStatus.CREATED, "OTP verification successful", {
-        access_token,
-      });
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "OTP verification successful",
+        {
+          access_token,
+        }
+      );
     } catch (error) {
       throw new HttpException(
         new ResponseWrapper(error.status, error.message),

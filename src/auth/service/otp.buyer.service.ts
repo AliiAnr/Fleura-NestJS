@@ -30,7 +30,7 @@ import { OtpBuyer } from '../entity/otp.buyer.entity';
           throw new NotFoundException('User not found');
         }
   
-        const otp = crypto.randomInt(100000, 999999).toString(); // Generate OTP
+        const otp = crypto.randomInt(10000, 99999).toString(); // Generate OTP
         const expiryDate = new Date(Date.now() + 5 * 60 * 1000); // OTP expires in 5 minutes
         const hashedOtp = await bcrypt.hash(otp, 10); // Hash OTP sebelum disimpan
   
