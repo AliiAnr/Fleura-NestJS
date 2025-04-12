@@ -63,6 +63,25 @@ export class BuyerController {
       );
     }
   }
+
+  @Get("profile")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer")
+  async getUserProfile(
+    @Req() req: any
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const user = await this.userService.getUserById(req.user.id);
+      return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+  
+
   @Get("")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("admin")
