@@ -22,6 +22,7 @@ import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { Multer } from "multer";
 import { UpdateStoreAddressDto } from "../dto/update.store-address.dto";
+import { Store } from "../entity/store.entity";
 
 @Controller("store")
 export class StoreController {
@@ -112,20 +113,40 @@ export class StoreController {
       );
     }
   }
-  @Get("detail/:storeId")
+  @Get("detail")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "buyer", "admin")
   async getStore(
     @Req() req: any,
-    @Param("storeId") storeId: string
+    @Query("storeId") storeId?: string
   ): Promise<ResponseWrapper<any>> {
     try {
-      const store = await this.storeService.getStoreByStoreId(storeId);
+      let store;
+
+      if (req.user.role === "admin" || req.user.role === "buyer") {
+        // Jika admin atau buyer, gunakan storeId dari query
+        if (!storeId) {
+          throw new HttpException(
+            new ResponseWrapper(HttpStatus.BAD_REQUEST, "storeId is required"),
+            HttpStatus.BAD_REQUEST
+          );
+        }
+        store = await this.storeService.getStoreByStoreId(storeId);
+      } else if (req.user.role === "seller") {
+        // Jika seller, gunakan id dari req.user.id
+        store = await this.storeService.getStore(req.user.id);
+      } else {
+        throw new UnauthorizedException("Unauthorized role");
+      }
+
       return new ResponseWrapper(HttpStatus.OK, "Store details", store);
     } catch (error) {
       throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
+        new ResponseWrapper(
+          error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+          error.message
+        ),
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -133,9 +154,7 @@ export class StoreController {
   @Get("")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "buyer", "admin")
-  async getAllStore(
-    @Req() req: any
-  ): Promise<ResponseWrapper<any>> {
+  async getAllStore(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
       const store = await this.storeService.getAllStore();
       return new ResponseWrapper(HttpStatus.OK, "Store details", store);
@@ -146,8 +165,6 @@ export class StoreController {
       );
     }
   }
-
-
 
   @Put("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)

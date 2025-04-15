@@ -72,6 +72,7 @@ export class SellerController {
   ): Promise<ResponseWrapper<any>> {
     try {
       const id = req.user.role === "admin" && userId ? userId : req.user.id;
+      console.log(id);
       const updatedSeller = await this.userService.updateSellerPartial(
         id,
         updateSellerPartialDto
