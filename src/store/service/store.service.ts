@@ -111,8 +111,8 @@ export class StoreService {
       if (!store) {
         throw new UnauthorizedException("Store not Found");
       }
-      const { id, sellerId, ...storeData } = store;
-      return storeData;
+      // const { id, sellerId, ...storeData } = store;
+      return store;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
@@ -124,8 +124,8 @@ export class StoreService {
       if (!store) {
         throw new UnauthorizedException("Store not Found");
       }
-      const { id, sellerId, ...storeData } = store;
-      return storeData;
+      // const { id, sellerId, ...storeData } = store;
+      return store;
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
