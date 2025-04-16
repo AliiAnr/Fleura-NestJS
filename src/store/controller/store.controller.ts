@@ -113,6 +113,45 @@ export class StoreController {
       );
     }
   }
+
+  @Get("address")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer","seller", "admin")
+  async getStoreAddress(
+    @Req() req: any,
+    @Query("storeId") storeId?: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      let storeAddress;
+
+      if (req.user.role === "admin" || req.user.role === "buyer") {
+        // Jika admin atau buyer, gunakan storeId dari query
+        if (!storeId) {
+          throw new HttpException(
+            new ResponseWrapper(HttpStatus.BAD_REQUEST, "storeId is required"),
+            HttpStatus.BAD_REQUEST
+          );
+        }
+        storeAddress = await this.storeService.getStoreAddress(storeId);
+      } else if (req.user.role === "seller") {
+        // Jika seller, gunakan id dari req.user.id
+        storeAddress = await this.storeService.getStoreAddressBySellerId(req.user.id);
+      } else {
+        throw new UnauthorizedException("Unauthorized role");
+      }
+
+      return new ResponseWrapper(HttpStatus.OK, "Store address details", storeAddress);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(
+          error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+          error.message
+        ),
+        error.status || HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+  
   @Get("detail")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "buyer", "admin")

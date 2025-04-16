@@ -131,6 +131,44 @@ export class StoreService {
     }
   }
 
+  async getStoreAddressBySellerId(
+    userId: string
+  ): Promise<StoreAddress> {
+    try {
+      const store = await this.storeRepository.findOneBy({ sellerId: userId });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
+      }
+      const address = await this.addressRepository.findOneBy({
+        storeId: store.id,
+      });
+      if (!address) {
+        throw new UnauthorizedException("Store Address not Found");
+      }
+      return address;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async getStoreAddress(storeId: string): Promise<StoreAddress>{
+    try {
+      const store = await this.storeRepository.findOneBy({ id: storeId });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
+      }
+      const address = await this.addressRepository.findOneBy({
+        storeId: store.id,
+      });
+      if (!address) {
+        throw new UnauthorizedException("Store Address not Found");
+      }
+      return address;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
   async getAllStore(): Promise<Store[]> {
     try {
       const stores = await this.storeRepository.find();
