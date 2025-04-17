@@ -143,9 +143,7 @@ export class StoreService {
       const address = await this.addressRepository.findOneBy({
         storeId: store.id,
       });
-      if (!address) {
-        throw new UnauthorizedException("Store Address not Found");
-      }
+      
       return {
         ...store,
         address,
