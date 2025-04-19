@@ -268,15 +268,16 @@ export class ProductService {
     const ratings = product.review.map((review) => review.rate);
     const rating =
       ratings.length > 0
-        ? ratings.reduce((sum: number, rate: number) => sum + rate, 0) / ratings.length
+        ? ratings.reduce((sum: number, rate: number) => sum + rate, 0) /
+          ratings.length
         : 0; // Jika tidak ada ulasan, rating adalah 0
+    const review_count = product.review.length;
     const { review, ...productWithoutReview } = product;
     const productWithRatings = {
       ...productWithoutReview,
       rating,
+      review_count,
     };
-
-    
 
     // console.log(product);
     return productWithRatings;
@@ -295,11 +296,13 @@ export class ProductService {
           ratings.length > 0
             ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
             : 0; // Jika tidak ada ulasan, rating adalah null
-  
+
+        const review_count = product.review.length;
         const { review, ...productWithoutReview } = product;
         return {
           ...productWithoutReview,
           rating,
+          review_count,
         };
       });
       return productsWithRatings;
@@ -320,10 +323,12 @@ export class ProductService {
           ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
           : 0; // Jika tidak ada ulasan, rating adalah null
 
+      const review_count = product.review.length;
       const { review, ...productWithoutReview } = product;
       return {
         ...productWithoutReview,
         rating,
+        review_count,
       };
     });
     return productsWithRatings;
@@ -332,7 +337,7 @@ export class ProductService {
   async getProductByCategory(categoryId: string): Promise<any> {
     const products = await this.productRepository.find({
       where: { category: { id: categoryId } },
-      relations: ["store", "category", "picture","review"],
+      relations: ["store", "category", "picture", "review"],
     });
     const productsWithRatings = products.map((product) => {
       const ratings = product.review.map((review) => review.rate);
@@ -341,10 +346,12 @@ export class ProductService {
           ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
           : 0; // Jika tidak ada ulasan, rating adalah null
 
+      const review_count = product.review.length;
       const { review, ...productWithoutReview } = product;
       return {
         ...productWithoutReview,
         rating,
+        review_count,
       };
     });
     return productsWithRatings;
@@ -356,7 +363,7 @@ export class ProductService {
   ): Promise<any> {
     const products = await this.productRepository.find({
       where: { category: { id: categoryId }, store: { id: storeId } },
-      relations: ["store", "category", "picture","review"],
+      relations: ["store", "category", "picture", "review"],
     });
     const productsWithRatings = products.map((product) => {
       const ratings = product.review.map((review) => review.rate);
@@ -365,13 +372,14 @@ export class ProductService {
           ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
           : 0; // Jika tidak ada ulasan, rating adalah null
 
+      const review_count = product.review.length;
       const { review, ...productWithoutReview } = product;
       return {
         ...productWithoutReview,
         rating,
+        review_count,
       };
     });
     return productsWithRatings;
-
   }
 }
