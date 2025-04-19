@@ -19,6 +19,7 @@ import * as path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { ProductCategory } from "../entity/product-category.entity";
 import { SupabaseService } from "src/supabase/supabase.service";
+import { ProductReview } from "../entity/product-review.entity";
 @Injectable()
 export class ProductService {
   constructor(
@@ -33,6 +34,8 @@ export class ProductService {
     private readonly productPictureRepository: Repository<ProductPicture>,
     @InjectRepository(ProductCategory)
     private readonly productCategoryRepository: Repository<ProductCategory>,
+    @InjectRepository(ProductReview)
+    private readonly productReviewRepository: Repository<ProductReview>,
     private readonly supabaseService: SupabaseService
   ) {}
 
@@ -252,48 +255,123 @@ export class ProductService {
     }
   }
 
-  async getProductByProductId(productId: string): Promise<Product> {
+  async getProductByProductId(productId: string): Promise<any> {
     const product = await this.productRepository.findOne({
       where: { id: productId },
-      relations: ["store", "category", "picture"],
+      relations: ["store", "category", "picture", "review"],
     });
+
     if (!product) {
       throw new UnauthorizedException("Product not Found");
     }
-    return product;
+
+    const ratings = product.review.map((review) => review.rate);
+    const rating =
+      ratings.length > 0
+        ? ratings.reduce((sum: number, rate: number) => sum + rate, 0) / ratings.length
+        : 0; // Jika tidak ada ulasan, rating adalah 0
+    const { review, ...productWithoutReview } = product;
+    const productWithRatings = {
+      ...productWithoutReview,
+      rating,
+    };
+
+    
+
+    // console.log(product);
+    return productWithRatings;
   }
 
-  async getProductsByStoreId(storeId: string): Promise<Product[]> {
+  async getProductsByStoreId(storeId: string): Promise<any> {
+    try {
+      const products = await this.productRepository.find({
+        where: { store: { id: storeId } },
+        relations: ["store", "category", "picture", "review"],
+      });
+      // Hitung rata-rata rating untuk setiap produk
+      const productsWithRatings = products.map((product) => {
+        const ratings = product.review.map((review) => review.rate);
+        const rating =
+          ratings.length > 0
+            ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+            : 0; // Jika tidak ada ulasan, rating adalah null
+  
+        const { review, ...productWithoutReview } = product;
+        return {
+          ...productWithoutReview,
+          rating,
+        };
+      });
+      return productsWithRatings;
+    } catch (error) {
+      throw new InternalServerErrorException("Failed to get products");
+    }
+    // return products;
+  }
+
+  async getAllProducts(): Promise<any> {
     const products = await this.productRepository.find({
-      where: { store: { id: storeId } },
-      relations: ["store", "category", "picture"],
+      relations: ["store", "category", "picture", "review"],
     });
-    return products;
+    const productsWithRatings = products.map((product) => {
+      const ratings = product.review.map((review) => review.rate);
+      const rating =
+        ratings.length > 0
+          ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+          : 0; // Jika tidak ada ulasan, rating adalah null
+
+      const { review, ...productWithoutReview } = product;
+      return {
+        ...productWithoutReview,
+        rating,
+      };
+    });
+    return productsWithRatings;
   }
 
-  async getAllProducts(): Promise<Product[]> {
-    const products = await this.productRepository.find({
-      relations: ["store", "category", "picture"],
-    });
-    return products;
-  }
-
-  async getProductByCategory(categoryId: string): Promise<Product[]> {
+  async getProductByCategory(categoryId: string): Promise<any> {
     const products = await this.productRepository.find({
       where: { category: { id: categoryId } },
-      relations: ["store", "category", "picture"],
+      relations: ["store", "category", "picture","review"],
     });
-    return products;
+    const productsWithRatings = products.map((product) => {
+      const ratings = product.review.map((review) => review.rate);
+      const rating =
+        ratings.length > 0
+          ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+          : 0; // Jika tidak ada ulasan, rating adalah null
+
+      const { review, ...productWithoutReview } = product;
+      return {
+        ...productWithoutReview,
+        rating,
+      };
+    });
+    return productsWithRatings;
   }
 
   async getProductByCategoryIdandStoreId(
     categoryId: string,
     storeId: string
-  ): Promise<Product[]> {
+  ): Promise<any> {
     const products = await this.productRepository.find({
       where: { category: { id: categoryId }, store: { id: storeId } },
-      relations: ["store", "category", "picture"],
+      relations: ["store", "category", "picture","review"],
     });
-    return products;
+    const productsWithRatings = products.map((product) => {
+      const ratings = product.review.map((review) => review.rate);
+      const rating =
+        ratings.length > 0
+          ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+          : 0; // Jika tidak ada ulasan, rating adalah null
+
+      const { review, ...productWithoutReview } = product;
+      return {
+        ...productWithoutReview,
+        rating,
+      };
+    });
+    return productsWithRatings;
+
   }
 }
