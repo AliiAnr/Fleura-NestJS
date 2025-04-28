@@ -1,5 +1,6 @@
 import { IsString, IsOptional, IsNotEmpty, IsUUID, IsEnum } from "class-validator";
 import { TakenMethod } from "../entity/order.entity";
+import { PaymentMethod } from "../entity/payment.entity";
 
 // export enum TakenMethod {
 //   PICKUP = "pickup",
@@ -26,4 +27,9 @@ export class CreateOrderDto {
   @IsUUID()
   @IsOptional()
   addressId: string;
+
+  @IsEnum(PaymentMethod,{
+    message: 'payment_method harus berupa "QRIS", "CASH" atau "POINT"',
+  })
+  payment_method: PaymentMethod;
 }

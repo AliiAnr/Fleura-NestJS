@@ -123,31 +123,30 @@ export class CartService {
   async getCart(buyerId: string) {
     const cartKey = `cart:${buyerId}`;
     const cartItems = await this.redisService.hgetall(cartKey);
-
+  
     if (!cartItems) return {};
-
+  
     // Parse JSON untuk setiap produk
     const products = Object.entries(cartItems).map(([key, value]) =>
       JSON.parse(value as string)
     );
-
-    // Ambil informasi produk dan store dari repository
+  
+    // Ambil informasi produk dari repository
     const productIds = products.map((item) => item.productId);
     const productsInfo = await this.productRepository.find({
       where: { id: In(productIds) },
-      relations: ["store"],
+      relations: ["store", "category", "picture"], // Tambahkan relasi yang diperlukan
     });
-
-    // Gabungkan informasi produk dan store ke dalam cart items
+  
+    // Gabungkan informasi produk ke dalam cart items
     const enrichedProducts = products.map((item) => {
       const productInfo = productsInfo.find((p) => p.id === item.productId);
       return {
         ...item,
-        productName: productInfo.name,
-        storeName: productInfo.store.name,
+        product: productInfo, // Gunakan seluruh data produk
       };
     });
-
+  
     // Kelompokkan berdasarkan storeId
     return this.groupCartByStore(enrichedProducts);
   }
@@ -173,20 +172,22 @@ export class CartService {
    */
   private groupCartByStore(cartItems: any[]) {
     const groupedCart = cartItems.reduce((acc, item) => {
-      const { storeId, storeName } = item;
+      const { storeId, storeName } = item.product.store;
+  
       if (!acc[storeId]) {
         acc[storeId] = { storeId, storeName, items: [] };
       }
+  
       acc[storeId].items.push({
-        productId: item.productId,
-        productName: item.productName,
+        product: item.product, // Gunakan seluruh data produk
         quantity: item.quantity,
         price: item.price,
         total: item.total,
       });
+  
       return acc;
     }, {});
-
+  
     return Object.values(groupedCart);
   }
 }

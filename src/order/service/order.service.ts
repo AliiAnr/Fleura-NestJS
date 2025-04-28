@@ -14,6 +14,7 @@ import { OrderItem } from "../entity/order-item.entity";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { BuyerAddress } from "src/buyer/entity/buyer.address.entity";
 import { Payment, PaymentMethod } from "../entity/payment.entity";
+import { PaymentService } from "./payment.service";
 
 @Injectable()
 export class OrderService {
@@ -31,7 +32,8 @@ export class OrderService {
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
     @InjectRepository(BuyerAddress)
-    private readonly buyerAddressRepository: Repository<BuyerAddress>
+    private readonly buyerAddressRepository: Repository<BuyerAddress>,
+    private paymentService: PaymentService
   ) {}
 
   async createOrder(buyerId: string, request: CreateOrderDto) {
@@ -116,28 +118,65 @@ export class OrderService {
 
     order.point = totalPoint;
 
-    return this.orderRepository.save(order);
+    // Simpan order
+    await this.orderRepository.save(order);
+
+    // Panggil fungsi pembayaran berdasarkan metode pembayaran
+    switch (request.payment_method) {
+      case PaymentMethod.QRIS:
+        return this.paymentService.createQrisTransaction(order.id);
+      case PaymentMethod.CASH:
+        return this.paymentService.createCashTransaction(order.id);
+      case PaymentMethod.POINT:
+        return this.paymentService.createPointTransaction(order.id);
+      default:
+        throw new HttpException(
+          { message: "Invalid payment method" },
+          HttpStatus.BAD_REQUEST
+        );
+    }
   }
 
   async getOrdersByBuyerId(buyerId: string) {
     console.log(buyerId);
     return this.orderRepository.find({
       where: { buyer: { id: buyerId } },
-      relations: ["orderItems", "orderItems.product"],
+      relations: [
+        "orderItems",
+        "orderItems.product",
+        "orderItems.product.store",
+        "orderItems.product.category",
+        "orderItems.product.picture",
+        "payment",
+      ],
     });
   }
 
   async getOrdersByStore(StoreId: string) {
     return this.orderRepository.find({
       where: { store: { id: StoreId } },
-      relations: ["orderItems", "orderItems.product"],
+      relations: [
+        "orderItems",
+        "orderItems.product",
+        "orderItems.product.store",
+        "orderItems.product.category",
+        "orderItems.product.picture",
+        "payment",
+      ],
     });
   }
 
   async getOrder(orderId: string) {
     return this.orderRepository.findOne({
       where: { id: orderId },
-      relations: ["orderItems", "orderItems.product"],
+      relations: [
+        "orderItems",
+        "orderItems.product",
+        "orderItems.product.store",
+        "orderItems.product.category",
+        "orderItems.product.picture",
+        "payment",
+      ],
     });
   }
 

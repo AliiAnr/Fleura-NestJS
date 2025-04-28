@@ -141,66 +141,8 @@ export class PaymentService {
     }
   }
 
-  // async createCashTransaction(orderId: string) {
-
-  async processNotification(data: any) {
-    // console.log(data);
-    const {
-      order_id,
-      transaction_status,
-      signature_key,
-      gross_amount,
-      status_code,
-    } = data;
-
-    // 🔹 1. Validasi Signature Key Midtrans
-    const generatedSignature = crypto
-      .createHash("sha512")
-      .update(order_id + status_code + gross_amount + this.serverKey)
-      .digest("hex");
-
-    if (generatedSignature !== signature_key) {
-      throw new Error("Invalid signature key");
-    }
-
-    // 🔹 2. Cek status transaksi dan update database
-    let status: PaymentStatus = PaymentStatus.UNPAID;
-
-    if (
-      transaction_status === "capture" ||
-      transaction_status === "settlement"
-    ) {
-      status = PaymentStatus.PAID;
-    } else if (transaction_status === "pending") {
-      status = PaymentStatus.UNPAID;
-    } else if (
-      transaction_status === "expire" ||
-      transaction_status === "cancel" ||
-      transaction_status === "deny"
-    ) {
-      status = PaymentStatus.EXPIRE;
-    }
-
-    // 🔹 3. Update status di database
-    const payment = await this.paymentRepository.findOne({
-      where: { orderId: order_id },
-    });
-
-    if (payment) {
-      payment.status = status;
-      await this.paymentRepository.save(payment);
-    } else {
-      // Jika order belum ada di database, buat baru
-      const newPayment = this.paymentRepository.create({
-        orderId: order_id,
-        // amount: gross_amount,
-        status,
-      });
-      await this.paymentRepository.save(newPayment);
-    }
-
-    return { message: `Payment status updated to ${status}` };
-  }
+  
+  
 
   async createCashTransaction(orderId: string) {
     const existingPayment = await this.paymentRepository.findOne({
@@ -280,6 +222,65 @@ export class PaymentService {
     await this.paymentRepository.save(payment);
 
     return { message: "Point transaction created successfully" };
+  }
+
+  async processNotification(data: any) {
+    // console.log(data);
+    const {
+      order_id,
+      transaction_status,
+      signature_key,
+      gross_amount,
+      status_code,
+    } = data;
+
+    // 🔹 1. Validasi Signature Key Midtrans
+    const generatedSignature = crypto
+      .createHash("sha512")
+      .update(order_id + status_code + gross_amount + this.serverKey)
+      .digest("hex");
+
+    if (generatedSignature !== signature_key) {
+      throw new Error("Invalid signature key");
+    }
+
+    // 🔹 2. Cek status transaksi dan update database
+    let status: PaymentStatus = PaymentStatus.UNPAID;
+
+    if (
+      transaction_status === "capture" ||
+      transaction_status === "settlement"
+    ) {
+      status = PaymentStatus.PAID;
+    } else if (transaction_status === "pending") {
+      status = PaymentStatus.UNPAID;
+    } else if (
+      transaction_status === "expire" ||
+      transaction_status === "cancel" ||
+      transaction_status === "deny"
+    ) {
+      status = PaymentStatus.EXPIRE;
+    }
+
+    // 🔹 3. Update status di database
+    const payment = await this.paymentRepository.findOne({
+      where: { orderId: order_id },
+    });
+
+    if (payment) {
+      payment.status = status;
+      await this.paymentRepository.save(payment);
+    } else {
+      // Jika order belum ada di database, buat baru
+      const newPayment = this.paymentRepository.create({
+        orderId: order_id,
+        // amount: gross_amount,
+        status,
+      });
+      await this.paymentRepository.save(newPayment);
+    }
+
+    return { message: `Payment status updated to ${status}` };
   }
 
 

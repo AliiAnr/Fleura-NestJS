@@ -8,6 +8,7 @@ import {
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
+  JoinColumn,
 } from "typeorm";
 import { Buyer } from "src/buyer/entity/buyer.entity";
 import { BuyerAddress } from "src/buyer/entity/buyer.address.entity";
@@ -47,6 +48,7 @@ export class Payment {
   @OneToOne(() => Order, (order) => order.payment, {
     cascade: true,
   })
+  @JoinColumn({ name: "orderId" })  // <<<<<< TAMBAHKAN INI!
   order: Order;
 
   @Column({ nullable: true })
