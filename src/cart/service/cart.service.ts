@@ -141,9 +141,12 @@ export class CartService {
     // Gabungkan informasi produk ke dalam cart items
     const enrichedProducts = products.map((item) => {
       const productInfo = productsInfo.find((p) => p.id === item.productId);
+      const { store, ...productWithoutStore } = productInfo; // Hilangkan properti store
       return {
         ...item,
-        product: productInfo, // Gunakan seluruh data produk
+        product: productWithoutStore, // Gunakan seluruh data produk
+        storeName: productInfo.store.name,
+        storePicture: productInfo.store.picture,
       };
     });
   
@@ -170,24 +173,42 @@ export class CartService {
   /**
    * Mengelompokkan produk berdasarkan storeId
    */
+  // private groupCartByStore(cartItems: any[]) {
+  //   const groupedCart = cartItems.reduce((acc, item) => {
+  //     const { storeId, storeName } = item.product.store;
+  
+  //     if (!acc[storeId]) {
+  //       acc[storeId] = { storeId, storeName, items: [] };
+  //     }
+  
+  //     acc[storeId].items.push({
+  //       product: item.product, // Gunakan seluruh data produk
+  //       quantity: item.quantity,
+  //       price: item.price,
+  //       total: item.total,
+  //     });
+  
+  //     return acc;
+  //   }, {});
+  
+  //   return Object.values(groupedCart);
+  // }
+
   private groupCartByStore(cartItems: any[]) {
     const groupedCart = cartItems.reduce((acc, item) => {
-      const { storeId, storeName } = item.product.store;
-  
+      const { storeId, storeName, storePicture } = item;
       if (!acc[storeId]) {
-        acc[storeId] = { storeId, storeName, items: [] };
+        acc[storeId] = { storeId, storeName, storePicture, items: [] };
       }
-  
       acc[storeId].items.push({
         product: item.product, // Gunakan seluruh data produk
         quantity: item.quantity,
         price: item.price,
         total: item.total,
       });
-  
       return acc;
     }, {});
-  
+
     return Object.values(groupedCart);
   }
 }
