@@ -13,11 +13,12 @@ import { StoreAddress } from "./entity/seller.address.entity";
 import { Product } from "src/product/entity/product.entity";
 import { Order } from "src/order/entity/order.entity";
 import { SupabaseService } from "src/supabase/supabase.service";
+import { AdminStoreReview } from "src/admin/entity/admin-store-review.entity";
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Seller, Store, StoreAddress, Product, Order]),
+    TypeOrmModule.forFeature([Seller, Store, StoreAddress, Product, Order, AdminStoreReview]),
     // MailerModule,
     JwtLoginModule,
   ],

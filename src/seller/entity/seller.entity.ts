@@ -10,6 +10,7 @@ import {
 import { OtpSeller } from "src/auth/entity/otp.seller.entity";
 import { SellerAddress } from "./seller.address.entity";
 import { Store } from "src/store/entity/store.entity";
+import { AdminSellerReview } from "src/admin/entity/admin-seller-review.entity";
 
 @Entity("seller")
 export class Seller {
@@ -49,6 +50,7 @@ export class Seller {
 
   @Column({ type: "timestamp", nullable: true })
   verified_at: Date;
+
   @OneToOne(() => SellerAddress, (address) => address.seller, {
     cascade: true,
     onDelete: "CASCADE",
@@ -62,4 +64,12 @@ export class Seller {
     nullable: true,
   })
   store: Store;
+
+  @Column({ type: "timestamp", nullable: true })
+  admin_verified_at: Date;
+
+  @OneToMany(() => AdminSellerReview, (admin_review) => admin_review.seller, {
+    cascade: true,
+  })
+  admin_review: AdminSellerReview[];
 }

@@ -7,7 +7,7 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Seller } from "src/seller/entity/seller.entity";
-import { Repository } from "typeorm";
+import { IsNull, Not, Repository } from "typeorm";
 import { Store } from "../entity/store.entity";
 import { UpdateStoreDto } from "../dto/store.update.dto";
 import * as path from "path";
@@ -118,7 +118,7 @@ export class StoreService {
       const address = await this.addressRepository.findOneBy({
         storeId: store.id,
       });
-      
+
       // const { id, sellerId, ...storeData } = store;
       return {
         ...store,
@@ -141,7 +141,7 @@ export class StoreService {
       const address = await this.addressRepository.findOneBy({
         storeId: store.id,
       });
-      
+
       return {
         ...store,
         address,
@@ -191,6 +191,60 @@ export class StoreService {
     try {
       // Ambil semua store
       const stores = await this.storeRepository.find();
+
+      // Ambil alamat untuk setiap store
+      const storesWithAddress = await Promise.all(
+        stores.map(async (store) => {
+          const address = await this.addressRepository.findOneBy({
+            storeId: store.id,
+          });
+
+          // Jika alamat tidak ditemukan, tambahkan null untuk address
+          return {
+            ...store,
+            address: address || null,
+          };
+        })
+      );
+
+      return storesWithAddress;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+  async getAllUnverifiedStore(): Promise<any[]> {
+    try {
+      // Ambil semua store
+      const stores = await this.storeRepository.find({
+        where: { admin_verified_at: IsNull() }, // Filter berdasarkan admin_verified_at
+      });
+
+      // Ambil alamat untuk setiap store
+      const storesWithAddress = await Promise.all(
+        stores.map(async (store) => {
+          const address = await this.addressRepository.findOneBy({
+            storeId: store.id,
+          });
+
+          // Jika alamat tidak ditemukan, tambahkan null untuk address
+          return {
+            ...store,
+            address: address || null,
+          };
+        })
+      );
+
+      return storesWithAddress;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+  async getAllVerifiedStore(): Promise<any[]> {
+    try {
+      // Ambil semua store
+      const stores = await this.storeRepository.find({
+        where: { admin_verified_at: Not(IsNull()) }, // Filter berdasarkan admin_verified_at
+      });
 
       // Ambil alamat untuk setiap store
       const storesWithAddress = await Promise.all(

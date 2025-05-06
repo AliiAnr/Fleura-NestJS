@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 
-import { Repository } from "typeorm";
+import { IsNull, Not, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import * as bcrypt from "bcrypt";
 import { Seller } from "../entity/seller.entity";
@@ -21,6 +21,7 @@ import { Multer } from "multer";
 import { SellerAddress } from "../entity/seller.address.entity";
 import { UpdateSellerAddressDto } from "../dto/update.seller-address.dto";
 import { SupabaseService } from "src/supabase/supabase.service";
+import { AdminSellerReview } from "src/admin/entity/admin-seller-review.entity";
 
 @Injectable()
 export class SellerService {
@@ -29,6 +30,8 @@ export class SellerService {
     @Inject("JwtLoginService") private jwtLoginService: JwtService,
     @InjectRepository(Seller)
     private readonly userRepository: Repository<Seller>,
+    @InjectRepository(AdminSellerReview)
+    private readonly adminSellerReviewRepository: Repository<AdminSellerReview>,
     @InjectRepository(SellerAddress)
     private readonly addressRepository: Repository<SellerAddress>,
     private readonly supabaseService: SupabaseService
@@ -319,6 +322,38 @@ export class SellerService {
       }
       const { password, ...result } = user;
       return result;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  
+  async getUnverifiedSellers(): Promise<Omit<Seller, 'password'>[]> {
+    try {
+      // Ambil semua seller yang belum diverifikasi oleh admin
+      const unverifiedSellers = await this.userRepository.find({
+        where: { admin_verified_at: IsNull() }, // Filter berdasarkan admin_verified_at
+      });
+  
+      // Hapus properti password dari hasil
+      return unverifiedSellers.map(({ password, ...result }) => result);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+
+  async getVerifiedSellers(): Promise<Omit<Seller, 'password'>[]> {
+    try {
+      // Ambil semua seller yang sudah diverifikasi oleh admin
+      const verifiedSellers = await this.userRepository.find({
+        where: { admin_verified_at: Not(IsNull()) }, // Filter berdasarkan admin_verified_at
+      });
+
+      // console.log(verifiedSellers);
+  
+      // Hapus properti password dari hasil
+      return verifiedSellers.map(({ password, ...result }) => result);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }

@@ -204,6 +204,34 @@ export class StoreController {
       );
     }
   }
+  @Get("verified")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "buyer", "admin")
+  async getAllVerifiedStore(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const store = await this.storeService.getAllVerifiedStore();
+      return new ResponseWrapper(HttpStatus.OK, "Store details", store);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+  @Get("unverified")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "buyer", "admin")
+  async getAllUnverifiedStore(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const store = await this.storeService.getAllUnverifiedStore();
+      return new ResponseWrapper(HttpStatus.OK, "Store details", store);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
 
   @Put("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)

@@ -10,6 +10,7 @@ import {
 import { StoreAddress } from "./seller.address.entity";
 import { Product } from "src/product/entity/product.entity";
 import { Order } from "src/order/entity/order.entity";
+import { AdminStoreReview } from "src/admin/entity/admin-store-review.entity";
 // import { Address } from './address.entity';
 
 @Entity("store")
@@ -65,9 +66,17 @@ export class Store {
   })
   products: Product[];
 
-  @OneToMany(()=> Order, (order) => order.store, {
+  @OneToMany(() => Order, (order) => order.store, {
     cascade: true,
     onDelete: "CASCADE",
   })
   order: Order[];
+
+  @Column({ type: "timestamp", nullable: true })
+  admin_verified_at: Date;
+
+  @OneToMany(() => AdminStoreReview, (admin_review) => admin_review.store, {
+    cascade: true,
+  })
+  admin_review: AdminStoreReview[];
 }

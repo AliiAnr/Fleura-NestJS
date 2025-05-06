@@ -21,15 +21,18 @@ import { ProductPicture } from "./product/entity/product-picture.entity";
 import { ProductCategory } from "./product/entity/product-category.entity";
 import { BuyerAddress } from "./buyer/entity/buyer.address.entity";
 import { ProductReview } from "./product/entity/product-review.entity";
-import { OrderModule } from './order/order.module';
+import { OrderModule } from "./order/order.module";
 import { Order } from "./order/entity/order.entity";
 import { OrderItem } from "./order/entity/order-item.entity";
 import { Payment } from "./order/entity/payment.entity";
-import { AdminModule } from './admin/admin.module';
+import { AdminModule } from "./admin/admin.module";
 import { Admin } from "./admin/entity/admin.entity";
-import { RedisModule } from './redis/redis.module';
-import { CartModule } from './cart/cart.module';
-import { SupabaseModule } from './supabase/supabase.module';
+import { RedisModule } from "./redis/redis.module";
+import { CartModule } from "./cart/cart.module";
+import { SupabaseModule } from "./supabase/supabase.module";
+import { AdminProductReview } from "./admin/entity/admin-product-review.entity";
+import { AdminSellerReview } from "./admin/entity/admin-seller-review.entity";
+import { AdminStoreReview } from "./admin/entity/admin-store-review.entity";
 // import { NotificationModule } from './notification/notification.module';
 
 @Module({
@@ -64,6 +67,9 @@ import { SupabaseModule } from './supabase/supabase.module';
             Order,
             OrderItem,
             Payment,
+            AdminProductReview,
+            AdminSellerReview,
+            AdminStoreReview,
           ],
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };

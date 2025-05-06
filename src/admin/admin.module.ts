@@ -8,9 +8,27 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 import { Admin } from "./entity/admin.entity";
 import { AdminSeeder } from "./seed/admin.seed";
+import { AdminProductReview } from "./entity/admin-product-review.entity";
+import { AdminSellerReview } from "./entity/admin-seller-review.entity";
+import { AdminStoreReview } from "./entity/admin-store-review.entity";
+import { Product } from "src/product/entity/product.entity";
+import { Store } from "src/store/entity/store.entity";
+import { Seller } from "src/seller/entity/seller.entity";
 
 @Module({
-  imports: [ConfigModule, TypeOrmModule.forFeature([Admin]), JwtLoginModule],
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([
+      Admin,
+      AdminProductReview,
+      AdminSellerReview,
+      AdminStoreReview,
+      Product,
+      Store,
+      Seller,
+    ]),
+    JwtLoginModule,
+  ],
   controllers: [AdminController],
   providers: [AdminService, JwtLoginStrategy, AdminSeeder],
 })

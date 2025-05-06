@@ -17,6 +17,7 @@ import { ReviewController } from "./controller/review.controller";
 import { Buyer } from "src/buyer/entity/buyer.entity";
 import { OrderItem } from "src/order/entity/order-item.entity";
 import { SupabaseService } from "src/supabase/supabase.service";
+import { AdminProductReview } from "src/admin/entity/admin-product-review.entity";
 
 @Module({
   imports: [
@@ -30,11 +31,12 @@ import { SupabaseService } from "src/supabase/supabase.service";
       ProductReview,
       Buyer,
       OrderItem,
+      AdminProductReview,
     ]),
     // MailerModule,
     JwtLoginModule,
   ],
-  providers: [ProductService, CategoryService,ReviewService, SupabaseService],
-  controllers: [ProductController, CategoryController,ReviewController],
+  providers: [ProductService, CategoryService, ReviewService, SupabaseService],
+  controllers: [ProductController, CategoryController, ReviewController],
 })
 export class ProductModule {}

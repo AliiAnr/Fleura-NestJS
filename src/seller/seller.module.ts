@@ -14,11 +14,12 @@ import { JwtForgotModule } from "src/auth/jwt/module/jwt-forgot.module";
 import { SellerAddress } from "./entity/seller.address.entity";
 import { Store } from "src/store/entity/store.entity";
 import { SupabaseService } from "src/supabase/supabase.service";
+import { AdminSellerReview } from "src/admin/entity/admin-seller-review.entity";
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Seller, OtpSeller,SellerAddress,Store]),
+    TypeOrmModule.forFeature([Seller, OtpSeller,SellerAddress,Store, AdminSellerReview]),
     // MailerModule,
     MailerModule,
     JwtLoginModule,

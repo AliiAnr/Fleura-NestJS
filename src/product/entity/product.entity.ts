@@ -13,6 +13,7 @@ import { ProductPicture } from "./product-picture.entity";
 import { ProductCategory } from "./product-category.entity";
 import { ProductReview } from "./product-review.entity";
 import { OrderItem } from "src/order/entity/order-item.entity";
+import { AdminProductReview } from "src/admin/entity/admin-product-review.entity";
 
 // import { Address } from './address.entity';
 
@@ -55,9 +56,18 @@ export class Product {
   })
   review: ProductReview[];
 
+  
   @ManyToOne(() => ProductCategory, (category) => category.product)
   category: ProductCategory;
-
+  
   @OneToMany(() => OrderItem, (orderItem) => orderItem.product)
   orderItems: OrderItem[];
+  
+  @Column({ type: "timestamp", nullable: true })
+  admin_verified_at: Date;
+  
+  @OneToMany(() => AdminProductReview, (admin_review) => admin_review.product, {
+    cascade: true,
+  })
+  admin_review: ProductReview[];
 }

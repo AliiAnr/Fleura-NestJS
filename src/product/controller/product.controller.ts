@@ -72,6 +72,34 @@ export class ProductController {
       );
     }
   }
+  @Get('verified')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin", "buyer")
+  async getVerifiedProducts(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const products = await this.productService.getAllVerifiedProducts();
+      return new ResponseWrapper(HttpStatus.OK, "Success", products);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+  @Get('unverified')
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin", "buyer")
+  async getUnverifiedProducts(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const products = await this.productService.getAllUnverifiedProducts();
+      return new ResponseWrapper(HttpStatus.OK, "Success", products);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
 
   @Get("store/:storeId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)

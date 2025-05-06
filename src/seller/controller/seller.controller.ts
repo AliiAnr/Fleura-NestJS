@@ -305,14 +305,39 @@ export class SellerController {
       const users = await this.userService.getAllSellers();
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve user"
-        );
-      }
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
+  @Get("unverified")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin", "seller", "buyer")
+  async getUnverifiedUsers(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const users = await this.userService.getUnverifiedSellers();
+      return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+  @Get("verified")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin", "seller", "buyer")
+  async getVerifiedUsers(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const users = await this.userService.getVerifiedSellers();
+      return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
     }
   }
 }

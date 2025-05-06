@@ -8,7 +8,7 @@ import { JwtService } from "@nestjs/jwt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Seller } from "src/seller/entity/seller.entity";
 import { Store } from "src/store/entity/store.entity";
-import { Repository } from "typeorm";
+import { IsNull, Not, Repository } from "typeorm";
 import { Product } from "../entity/product.entity";
 import { CreateProductDto } from "../dto/create.product.dto";
 import { UpdateProductDto } from "../dto/update.product.dto";
@@ -334,6 +334,51 @@ export class ProductService {
     return productsWithRatings;
   }
 
+  async getAllVerifiedProducts(): Promise<any> {
+    const products = await this.productRepository.find({
+      where: { admin_verified_at: Not(IsNull()) },
+      relations: ["store", "category", "picture", "review"],
+    });
+    const productsWithRatings = products.map((product) => {
+      const ratings = product.review.map((review) => review.rate);
+      const rating =
+        ratings.length > 0
+          ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+          : 0; // Jika tidak ada ulasan, rating adalah null
+
+      const review_count = product.review.length;
+      const { review, ...productWithoutReview } = product;
+      return {
+        ...productWithoutReview,
+        rating,
+        review_count,
+      };
+    });
+    return productsWithRatings;
+  }
+  async getAllUnverifiedProducts(): Promise<any> {
+    const products = await this.productRepository.find({
+      where: { admin_verified_at: IsNull() },
+      relations: ["store", "category", "picture", "review"],
+    });
+    const productsWithRatings = products.map((product) => {
+      const ratings = product.review.map((review) => review.rate);
+      const rating =
+        ratings.length > 0
+          ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+          : 0; // Jika tidak ada ulasan, rating adalah null
+
+      const review_count = product.review.length;
+      const { review, ...productWithoutReview } = product;
+      return {
+        ...productWithoutReview,
+        rating,
+        review_count,
+      };
+    });
+    return productsWithRatings;
+  }
+
   async getProductByCategory(categoryId: string): Promise<any> {
     const products = await this.productRepository.find({
       where: { category: { id: categoryId } },
@@ -382,4 +427,6 @@ export class ProductService {
     });
     return productsWithRatings;
   }
+
+  
 }
