@@ -1,6 +1,26 @@
-import { IsString, IsOptional, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsUUID, IsNumber } from 'class-validator';
 
 export class CreateBuyerAddressDto {
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    name?: string;
+
+    @IsOptional()
+    @IsString()
+    @IsNotEmpty()
+    phone?: string;
+
+    @IsOptional()
+    @IsNumber()
+    @IsNotEmpty()
+    latitude?: number;
+
+    @IsOptional()
+    @IsNumber()
+    @IsNotEmpty()
+    longitude?: number;
+
     @IsOptional()
     @IsString()
     @IsNotEmpty()

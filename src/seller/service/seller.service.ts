@@ -248,6 +248,19 @@ export class SellerService {
         address.sellerId = userId;
       }
 
+      if (updateSellerAddressDto.name) {
+        address.name = updateSellerAddressDto.name;
+      }
+      if (updateSellerAddressDto.phone) {
+        address.phone = updateSellerAddressDto.phone;
+      }
+      if (updateSellerAddressDto.latitude) {
+        address.latitude = updateSellerAddressDto.latitude;
+      }
+      if (updateSellerAddressDto.longitude) {
+        address.longitude = updateSellerAddressDto.longitude;
+      }
+
       if (updateSellerAddressDto.postcode) {
         address.postcode = updateSellerAddressDto.postcode;
       }

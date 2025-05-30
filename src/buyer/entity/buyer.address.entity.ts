@@ -16,6 +16,19 @@ import { Order } from "src/order/entity/order.entity";
 export class BuyerAddress {
   @PrimaryGeneratedColumn("uuid")
   id: string;
+
+  @Column({ nullable: true })
+  name: string;
+
+  @Column({ nullable: true })
+  phone: string;
+
+  @Column({ type: "double precision", nullable: true })
+  latitude: number;
+
+  @Column({ type: "double precision", nullable: true })
+  longitude: number;
+
   @Column()
   postcode: string;
 

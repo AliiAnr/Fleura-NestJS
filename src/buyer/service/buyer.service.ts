@@ -177,6 +177,19 @@ export class BuyerService {
         throw new UnprocessableEntityException("Address not Found");
       }
 
+      if (updateBuyerAddressDto.name) {
+        address.name = updateBuyerAddressDto.name;
+      }
+      if (updateBuyerAddressDto.phone) {
+        address.phone = updateBuyerAddressDto.phone;
+      }
+      if (updateBuyerAddressDto.latitude) {
+        address.latitude = updateBuyerAddressDto.latitude;
+      }
+      if (updateBuyerAddressDto.longitude) {
+        address.longitude = updateBuyerAddressDto.longitude;
+      }
+
       if (updateBuyerAddressDto.postcode) {
         address.postcode = updateBuyerAddressDto.postcode;
       }
@@ -215,6 +228,10 @@ export class BuyerService {
 
       const address = new BuyerAddress();
       address.buyer = user;
+      address.name = request.name;
+      address.phone = request.phone;
+      address.latitude = request.latitude;
+      address.longitude = request.longitude;
       address.postcode = request.postcode;
       address.road = request.road;
       address.province = request.province;

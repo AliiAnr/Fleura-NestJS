@@ -14,6 +14,19 @@ import { Seller } from "./seller.entity";
 export class SellerAddress {
   @PrimaryGeneratedColumn("uuid")
   id: string;
+
+  @Column({ nullable: true })
+  name: string;
+
+  @Column({ nullable: true })
+  phone: string;
+
+  @Column({ type: "double precision", nullable: true })
+  latitude: number;
+
+  @Column({ type: "double precision", nullable: true })
+  longitude: number;
+
   @Column()
   postcode: string;
 
@@ -33,10 +46,10 @@ export class SellerAddress {
   district: string;
 
   @OneToOne(() => Seller, (seller) => seller.address, {
-    onDelete: 'CASCADE', // Jika user dihapus, OTP juga akan dihapus
+    onDelete: "CASCADE", // Jika user dihapus, OTP juga akan dihapus
   })
   seller: Seller;
 
-  @Column('uuid') // Foreign key untuk user disimpan sebagai UUID
+  @Column("uuid") // Foreign key untuk user disimpan sebagai UUID
   sellerId: string;
 }
