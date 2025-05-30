@@ -11,6 +11,7 @@ import { OtpBuyer } from "src/auth/entity/otp.buyer.entity";
 import { BuyerAddress } from "./buyer.address.entity";
 import { ProductReview } from "src/product/entity/product-review.entity";
 import { Order } from "src/order/entity/order.entity";
+import { BuyerToken } from "src/notification/entity/buyer-token.entity";
 
 @Entity("buyer")
 export class Buyer {
@@ -61,9 +62,13 @@ export class Buyer {
   })
   review: ProductReview;
 
-
-  @OneToMany(()=> Order, (order) => order.buyer, {
+  @OneToMany(() => Order, (order) => order.buyer, {
     cascade: true,
   })
   order: Order[];
+
+  @OneToMany(() => BuyerToken, (buyerToken) => buyerToken.buyer, {
+    cascade: true,
+  })
+  token: BuyerToken[];
 }

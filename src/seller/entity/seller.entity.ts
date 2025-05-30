@@ -11,6 +11,7 @@ import { OtpSeller } from "src/auth/entity/otp.seller.entity";
 import { SellerAddress } from "./seller.address.entity";
 import { Store } from "src/store/entity/store.entity";
 import { AdminSellerReview } from "src/admin/entity/admin-seller-review.entity";
+import { SellerToken } from "src/notification/entity/seller-token.entity";
 
 @Entity("seller")
 export class Seller {
@@ -72,4 +73,9 @@ export class Seller {
     cascade: true,
   })
   admin_review: AdminSellerReview[];
+  
+  @OneToMany(() => SellerToken, (sellerToken) => sellerToken.seller, {
+    cascade: true,
+  })
+  token: SellerToken[];
 }

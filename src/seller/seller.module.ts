@@ -15,11 +15,12 @@ import { SellerAddress } from "./entity/seller.address.entity";
 import { Store } from "src/store/entity/store.entity";
 import { SupabaseService } from "src/supabase/supabase.service";
 import { AdminSellerReview } from "src/admin/entity/admin-seller-review.entity";
+import { SellerToken } from "src/notification/entity/seller-token.entity";
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Seller, OtpSeller,SellerAddress,Store, AdminSellerReview]),
+    TypeOrmModule.forFeature([Seller, OtpSeller,SellerAddress,Store, AdminSellerReview,SellerToken]),
     // MailerModule,
     MailerModule,
     JwtLoginModule,
