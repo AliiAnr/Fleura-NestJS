@@ -122,19 +122,37 @@ export class OrderService {
     await this.orderRepository.save(order);
 
     // Panggil fungsi pembayaran berdasarkan metode pembayaran
+    let paymentResult: any;
     switch (request.payment_method) {
       case PaymentMethod.QRIS:
-        return this.paymentService.createQrisTransaction(order.id);
+        paymentResult = await this.paymentService.createQrisTransaction(
+          order.id
+        );
+        break;
+      // return this.paymentService.createQrisTransaction(order.id);
       case PaymentMethod.CASH:
-        return this.paymentService.createCashTransaction(order.id);
+        paymentResult = await this.paymentService.createCashTransaction(
+          order.id
+        );
+        break;
+      // return this.paymentService.createCashTransaction(order.id);
       case PaymentMethod.POINT:
-        return this.paymentService.createPointTransaction(order.id);
+        paymentResult = await this.paymentService.createPointTransaction(
+          order.id
+        );
+        break;
+      // return this.paymentService.createPointTransaction(order.id);
       default:
         throw new HttpException(
           { message: "Invalid payment method" },
           HttpStatus.BAD_REQUEST
         );
     }
+    // Ambil data payment setelah transaksi berhasil
+    const payment = await this.paymentRepository.findOne({
+      where: { orderId: order.id },
+    });
+    return payment;
   }
 
   async getOrdersByBuyerId(buyerId: string) {

@@ -38,7 +38,7 @@ export class OrderController {
     try {
       const id = req.user.role === "admin" && buyerId ? buyerId : req.user.id;
       const order = await this.orderService.createOrder(id, request);
-      return new ResponseWrapper(HttpStatus.CREATED, "Order created");
+      return new ResponseWrapper(HttpStatus.CREATED, "Order created", order);
     } catch (error) {
       throw new HttpException(
         new ResponseWrapper(error.status, error.message),
