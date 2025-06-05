@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
   Param,
@@ -24,6 +25,26 @@ export class PaymentController {
     private orderService: OrderService,
     private paymentService: PaymentService
   ) {}
+
+
+  @Get("detail/:orderId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer","admin")
+  async getPaymentDetail(
+    @Req() req: any,
+    @Param("orderId") orderId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const payment = await this.paymentService.getPaymentByOrderId(orderId);
+      return new ResponseWrapper(HttpStatus.OK, "Payment detail retrieved", payment);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
 
   @Post("point/:orderId")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)

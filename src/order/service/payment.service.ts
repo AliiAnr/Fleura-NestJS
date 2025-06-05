@@ -299,4 +299,45 @@ export class PaymentService {
 
     return { message: `Payment status updated to ${status}` };
   }
+
+
+  async getQRISDetails(orderId: string) {
+    const payment = await this.paymentRepository.findOne({
+      where: { orderId },
+    });
+
+    if (!payment) {
+      throw new HttpException(
+        { message: "Payment not found", orderId },
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    if (payment.methode !== PaymentMethod.QRIS) {
+      throw new HttpException(
+        { message: "Payment is not QRIS", orderId },
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    return {
+      qris_url: payment.qris_url,
+      qris_expired_at: payment.qris_expired_at,
+    };
+  }
+
+  async getPaymentByOrderId(orderId: string): Promise<Payment> {
+    const payment = await this.paymentRepository.findOne({
+      where: { orderId },
+    });
+
+    if (!payment) {
+      throw new HttpException(
+        { message: "Payment not found", orderId },
+        HttpStatus.NOT_FOUND
+      );
+    }
+
+    return payment;
+  }
 }
