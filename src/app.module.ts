@@ -34,7 +34,7 @@ import { AdminProductReview } from "./admin/entity/admin-product-review.entity";
 import { AdminSellerReview } from "./admin/entity/admin-seller-review.entity";
 import { AdminStoreReview } from "./admin/entity/admin-store-review.entity";
 // import { NotificationModule } from './notification/notification.module';
-import { NotificationModule } from './notification/notification.module';
+import { NotificationModule } from "./notification/notification.module";
 import { BuyerToken } from "./notification/entity/buyer-token.entity";
 import { SellerToken } from "./notification/entity/seller-token.entity";
 
@@ -74,7 +74,7 @@ import { SellerToken } from "./notification/entity/seller-token.entity";
             AdminSellerReview,
             AdminStoreReview,
             BuyerToken,
-            SellerToken
+            SellerToken,
           ],
           synchronize: true, // Sesuaikan dengan kebutuhan Anda
         };

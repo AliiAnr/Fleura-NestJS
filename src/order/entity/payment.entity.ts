@@ -53,4 +53,10 @@ export class Payment {
 
   @Column({ nullable: true })
   orderId: string;
+
+  @Column({ nullable: true })
+  qris_url: string;
+
+  @Column({ nullable: true })
+  qris_expired_at: Date;
 }

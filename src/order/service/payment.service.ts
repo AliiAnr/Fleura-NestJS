@@ -128,6 +128,8 @@ export class PaymentService {
       const payment = this.paymentRepository.create({
         methode: PaymentMethod.QRIS,
         orderId: orderId,
+        qris_url: response.data.actions[0].url,
+        qris_expired_at: new Date(response.data.expiry_time),
       });
 
       await this.paymentRepository.save(payment);
@@ -140,9 +142,6 @@ export class PaymentService {
       throw error.response?.data || error.message;
     }
   }
-
-  
-  
 
   async createCashTransaction(orderId: string) {
     const existingPayment = await this.paymentRepository.findOne({
@@ -282,7 +281,6 @@ export class PaymentService {
 
     return { message: `Payment status updated to ${status}` };
   }
-
 
   async updatePaymentStatus(orderId: string, status: PaymentStatus) {
     const payment = await this.paymentRepository.findOne({
