@@ -118,11 +118,11 @@ export class OrderService {
 
     order.point = totalPoint;
 
-    if(request.note) {
+    if (request.note) {
       order.note = request.note;
     }
     if (request.taken_date) {
-      order.taken_date = request.taken_date;
+      order.taken_date = new Date(request.taken_date);
     }
 
     // Simpan order

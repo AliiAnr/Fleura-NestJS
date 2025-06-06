@@ -15,8 +15,8 @@ export class CreateOrderDto {
   note?: string;
 
   @IsOptional()
-  @IsDate()
-  taken_date?: Date;
+  @IsString()
+  taken_date?: string;
 
   @IsOptional()
   @IsEnum(TakenMethod, {
