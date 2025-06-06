@@ -53,7 +53,7 @@ export class OrderService {
     // const order = new Order();
     // order.buyer = buyer;
 
-    if (request.taken_method === "delivery") {
+    // if (request.taken_method === "delivery") {
       const userAddress = await this.buyerAddressRepository.findOne({
         where: { id: request.addressId, buyer: { id: buyerId } },
       });
@@ -62,7 +62,7 @@ export class OrderService {
       }
       // order.address = userAddress;
       order.addressId = userAddress.id;
-    }
+    // }
 
     // console.log(order);
 
