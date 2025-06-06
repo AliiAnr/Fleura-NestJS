@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, IsUUID, IsEnum } from "class-validator";
+import { IsString, IsOptional, IsNotEmpty, IsUUID, IsEnum, IsDate } from "class-validator";
 import { TakenMethod } from "../entity/order.entity";
 import { PaymentMethod } from "../entity/payment.entity";
 
@@ -15,8 +15,8 @@ export class CreateOrderDto {
   note?: string;
 
   @IsOptional()
-  @IsString()
-  taken_date?: string;
+  @IsDate()
+  taken_date?: Date;
 
   @IsOptional()
   @IsEnum(TakenMethod, {

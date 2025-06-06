@@ -118,6 +118,13 @@ export class OrderService {
 
     order.point = totalPoint;
 
+    if(request.note) {
+      order.note = request.note;
+    }
+    if (request.taken_date) {
+      order.taken_date = request.taken_date;
+    }
+
     // Simpan order
     await this.orderRepository.save(order);
 
