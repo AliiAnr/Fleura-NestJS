@@ -94,9 +94,14 @@ export class FCMService {
         tokens: tokenList,
       };
 
+      console.log(multicastMessage)
+
       const response = await admin
         .messaging()
         .sendEachForMulticast(multicastMessage);
+
+
+      console.log(response)
 
       return {
         success: true,
