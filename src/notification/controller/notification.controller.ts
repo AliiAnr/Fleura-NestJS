@@ -81,4 +81,22 @@ export class NotificationController {
       );
     }
   }
+
+  @Post("buyer/test-send")
+  async sendNotifTest(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+
+
+      await this.fcmService.sendNotifTest();
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "Notification sended successfully"
+      );
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
 }

@@ -80,7 +80,11 @@ export class FCMService {
         };
       }
 
+      console.log(tokens)
+
       const tokenList = tokens.map((t) => t.token).filter(Boolean);
+
+      console.log(tokenList)
 
       const multicastMessage = {
         notification: {
@@ -107,6 +111,47 @@ export class FCMService {
       };
     }
   }
+
+  async sendNotifTest() {
+    const title = "YTES";
+    const body = "gegegeg";
+    const tokens = [
+      "eGZGFM2ZSH2v7fXiJGChxZ:APA91bH1YNvU9u1t9aj16Z__CYr5c6EDaaE3SY_Kn_60tj4VXVZlrfdms2PTaBMDiB19nvbK--LCvmEzMvrU5oFLL9TgnqIKzBxOUma0lK1l4E_HNKp4YTA",
+    ];
+    try {
+      const tokenList = tokens.filter(Boolean);
+
+      console.log(tokenList);
+
+      const multicastMessage = {
+        notification: {
+          title,
+          body,
+        },
+        tokens: tokenList,
+      };
+
+      console.log(multicastMessage);
+
+      const response = await admin
+        .messaging()
+        .sendEachForMulticast(multicastMessage);
+
+      console.log(response);
+      return {
+        success: true,
+        successCount: response.successCount,
+        failureCount: response.failureCount,
+        responses: response.responses,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+  }
+
   async sendNotificationBySellerId(
     title: string,
     body: string,
