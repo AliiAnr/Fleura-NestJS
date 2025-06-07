@@ -59,4 +59,26 @@ export class NotificationController {
       );
     }
   }
+
+  @Post("buyer/send")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("buyer")
+  async sendNotif(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      await this.fcmService.sendNotificationByBuyerId(
+        "TES NOTIF",
+        "HOHOH",
+        req.user.id
+      );
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "Notification sended successfully"
+      );
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
 }
