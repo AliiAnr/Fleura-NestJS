@@ -80,11 +80,17 @@ export class FCMService {
         };
       }
 
-      console.log(tokens)
+      console.log(tokens);
 
-      const tokenList = tokens.map((t) => t.token).filter(Boolean);
+      const tokenList = [
+        ...new Set(
+          tokens
+            .map((t) => (t.token || "").trim()) // hapus whitespace
+            .filter((t) => t.length > 0 && t.includes(":APA91")) // validasi kasar
+        ),
+      ];
 
-      console.log(tokenList)
+      console.log(tokenList);
 
       const multicastMessage = {
         notification: {
@@ -94,14 +100,13 @@ export class FCMService {
         tokens: tokenList,
       };
 
-      console.log(multicastMessage)
+      console.log(multicastMessage);
 
       const response = await admin
         .messaging()
         .sendEachForMulticast(multicastMessage);
 
-
-      console.log(response)
+      console.log(response);
 
       return {
         success: true,
