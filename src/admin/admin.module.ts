@@ -14,6 +14,10 @@ import { AdminStoreReview } from "./entity/admin-store-review.entity";
 import { Product } from "src/product/entity/product.entity";
 import { Store } from "src/store/entity/store.entity";
 import { Seller } from "src/seller/entity/seller.entity";
+import { FCMService } from "src/notification/service/fcm.service";
+import { Buyer } from "src/buyer/entity/buyer.entity";
+import { BuyerToken } from "src/notification/entity/buyer-token.entity";
+import { SellerToken } from "src/notification/entity/seller-token.entity";
 
 @Module({
   imports: [
@@ -24,12 +28,15 @@ import { Seller } from "src/seller/entity/seller.entity";
       AdminSellerReview,
       AdminStoreReview,
       Product,
+      Buyer,
+      BuyerToken,
+      SellerToken,
       Store,
       Seller,
     ]),
     JwtLoginModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService, JwtLoginStrategy, AdminSeeder],
+  providers: [AdminService, JwtLoginStrategy, AdminSeeder, FCMService],
 })
 export class AdminModule {}

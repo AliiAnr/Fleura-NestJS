@@ -18,6 +18,7 @@ import {
   PaymentStatus,
 } from "../entity/payment.entity";
 import * as crypto from "crypto";
+import { FCMService } from "src/notification/service/fcm.service";
 
 @Injectable()
 export class PaymentService {
@@ -34,7 +35,9 @@ export class PaymentService {
     private readonly orderItemRepository: Repository<OrderItem>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-    @InjectRepository(Buyer) private readonly buyerRepository: Repository<Buyer>
+    @InjectRepository(Buyer)
+    private readonly buyerRepository: Repository<Buyer>,
+    private readonly notificationService: FCMService
   ) {}
 
   async createQrisTransaction(orderId: string) {
@@ -297,9 +300,34 @@ export class PaymentService {
     payment.status = status;
     await this.paymentRepository.save(payment);
 
+    if (status === PaymentStatus.PAID) {
+      // Notify buyer about payment success
+      this.notificationService.sendNotificationByBuyerId(
+        "Pembayarab Berhasil",
+        `Pembayaran untuk pesanan ${orderId} telah berhasil.`,
+        payment.order.buyer.id
+      );
+      this.notificationService.sendNotificationBySellerId(
+        "Pembayaran Berhasil",
+        `Pembayaran untuk pesanan ${orderId} telah berhasil.`,
+        payment.order.store.seller.id
+      );
+    } else if (status === PaymentStatus.EXPIRE) {
+      // Notify buyer about payment expiration
+      this.notificationService.sendNotificationByBuyerId(
+        "Pembayaran Kadaluarsa",
+        `Pembayaran untuk pesanan ${orderId} telah kadaluarsa.`,
+        payment.order.buyer.id
+      );
+      this.notificationService.sendNotificationBySellerId(
+        "Pembayaran Kadaluarsa",
+        `Pembayaran untuk pesanan ${orderId} telah kadaluarsa.`,
+        payment.order.store.seller.id
+      );
+    }
+
     return { message: `Payment status updated to ${status}` };
   }
-
 
   async getQRISDetails(orderId: string) {
     const payment = await this.paymentRepository.findOne({

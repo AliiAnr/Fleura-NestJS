@@ -23,6 +23,7 @@ import { CreateCategoryDto } from "../dto/create.category.dto";
 import { ProductReview } from "../entity/product-review.entity";
 import { Buyer } from "src/buyer/entity/buyer.entity";
 import { CreateReviewDto } from "../dto/create.review.dto";
+import { FCMService } from "src/notification/service/fcm.service";
 @Injectable()
 export class ReviewService {
   constructor(
@@ -40,7 +41,8 @@ export class ReviewService {
     @InjectRepository(ProductCategory)
     private readonly productCategoryRepository: Repository<ProductCategory>,
     @InjectRepository(ProductReview)
-    private readonly productReviewRepository: Repository<ProductReview>
+    private readonly productReviewRepository: Repository<ProductReview>,
+    private readonly notificationService: FCMService
   ) {}
 
   async createReview(
@@ -80,6 +82,12 @@ export class ReviewService {
 
     try {
       const result = await this.productReviewRepository.save(review);
+
+      this.notificationService.sendNotificationBySellerId(
+        "Ulasan Baru",
+        `Pembeli ${buyer.name} telah memberikan ulasan pada produk ${product.name}`,
+        product.store.seller.id
+      );
       // console.log(result);
       return result;
     } catch (error) {
@@ -97,7 +105,6 @@ export class ReviewService {
 
     const reviews = await this.productReviewRepository.find({
       where: { product },
-
     });
 
     return reviews;

@@ -19,6 +19,7 @@ import { AdminSellerReview } from "../entity/admin-seller-review.entity";
 import { AdminSellerReviewDto } from "../dto/seller-review.dto";
 import { AdminProductReviewDto } from "../dto/product-review.dto";
 import { AdminStoreReviewDto } from "../dto/store-review.dto";
+import { FCMService } from "src/notification/service/fcm.service";
 
 @Injectable()
 export class AdminService {
@@ -37,7 +38,8 @@ export class AdminService {
     @InjectRepository(AdminStoreReview)
     private readonly adminStoreReviewRepository: Repository<AdminStoreReview>,
     @InjectRepository(AdminSellerReview)
-    private readonly adminSellerReviewRepository: Repository<AdminSellerReview>
+    private readonly adminSellerReviewRepository: Repository<AdminSellerReview>,
+    private readonly notificationService: FCMService
   ) {}
 
   //   async createUser(request: RegisterAdminDto): Promise<Admin> {
@@ -106,10 +108,35 @@ export class AdminService {
       await this.sellerRepository.save(seller);
     }
 
+    if (status === AdminReviewStatus.REJECTED) {
+      // Kirim notifikasi ke seller jika review ditolak
+      this.notificationService.sendNotificationBySellerId(
+        "Akun Penjual Anda Ditolak",
+        `Akun penjual Anda telah ditolak oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
+        seller.id
+      );
+    } else if (status === AdminReviewStatus.ACCEPTED) {
+      // Kirim notifikasi ke seller jika review diterima
+      this.notificationService.sendNotificationBySellerId(
+        "Akun Penjual Anda Diterima",
+        `Akun penjual Anda telah diterima oleh admin. Anda sekarang dapat mulai berjualan.`,
+        seller.id
+      );
+    } else if (status === AdminReviewStatus.NEED_REVIEW) {
+      // Kirim notifikasi ke seller jika review perlu ditinjau ulang
+      this.notificationService.sendNotificationBySellerId(
+        "Akun Penjual Perlu Tinjauan Ulang",
+        `Akun penjual Anda perlu ditinjau ulang oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
+        seller.id
+      );
+    }
+
     return savedReview;
   }
 
-  async reviewProduct(adminProductReviewDto: AdminProductReviewDto): Promise<AdminProductReview> {
+  async reviewProduct(
+    adminProductReviewDto: AdminProductReviewDto
+  ): Promise<AdminProductReview> {
     const { productId, description, status } = adminProductReviewDto;
 
     // Cari produk berdasarkan productId
@@ -136,10 +163,35 @@ export class AdminService {
       await this.productRepository.save(product);
     }
 
+    if( status === AdminReviewStatus.REJECTED) {
+      // Kirim notifikasi ke seller jika review ditolak
+      this.notificationService.sendNotificationBySellerId(
+        "Produk Anda Ditolak",
+        `Produk Anda  ${product.name} telah ditolak oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
+        product.store.seller.id
+      );
+    } else if (status === AdminReviewStatus.ACCEPTED) {
+      // Kirim notifikasi ke seller jika review diterima
+      this.notificationService.sendNotificationBySellerId(
+        "Produk Anda Diterima",
+        `Produk Anda ${product.name} telah diterima oleh admin. Produk Anda sekarang dapat dilihat oleh pembeli.`,
+        product.store.seller.id
+      );
+    } else if (status === AdminReviewStatus.NEED_REVIEW) {
+      // Kirim notifikasi ke seller jika review perlu ditinjau ulang
+      this.notificationService.sendNotificationBySellerId(
+        "Produk Perlu Tinjauan Ulang",
+        `Produk Anda ${product.name} perlu ditinjau ulang oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
+        product.store.seller.id
+      );
+    }
+
     return savedReview;
   }
 
-  async reviewStore(adminStoreReviewDto: AdminStoreReviewDto): Promise<AdminStoreReview> {
+  async reviewStore(
+    adminStoreReviewDto: AdminStoreReviewDto
+  ): Promise<AdminStoreReview> {
     const { storeId, description, status } = adminStoreReviewDto;
 
     // Cari store berdasarkan storeId
@@ -164,6 +216,30 @@ export class AdminService {
     if (status === AdminReviewStatus.ACCEPTED) {
       store.admin_verified_at = new Date(); // Set waktu verifikasi ke waktu saat ini
       await this.storeRepository.save(store);
+    }
+
+    if (status === AdminReviewStatus.REJECTED) {
+      // Kirim notifikasi ke seller jika review ditolak
+      this.notificationService.sendNotificationBySellerId(
+        "Toko Anda Ditolak",
+        `Toko Anda ${store.name} telah ditolak oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
+        store.seller.id
+      );  
+    } else if (status === AdminReviewStatus.ACCEPTED) { 
+      // Kirim notifikasi ke seller jika review diterima
+      this.notificationService.sendNotificationBySellerId(
+        "Toko Anda Diterima",
+        `Toko Anda ${store.name} telah diterima oleh admin. Toko Anda sekarang dapat dilihat oleh pembeli.`,
+        store.seller.id
+      );
+    }
+    else if (status === AdminReviewStatus.NEED_REVIEW) {
+      // Kirim notifikasi ke seller jika review perlu ditinjau ulang
+      this.notificationService.sendNotificationBySellerId(
+        "Toko Perlu Tinjauan Ulang",
+        `Toko Anda ${store.name} perlu ditinjau ulang oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
+        store.seller.id
+      );
     }
 
     return savedReview;

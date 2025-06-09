@@ -18,6 +18,9 @@ import { Buyer } from "src/buyer/entity/buyer.entity";
 import { OrderItem } from "src/order/entity/order-item.entity";
 import { SupabaseService } from "src/supabase/supabase.service";
 import { AdminProductReview } from "src/admin/entity/admin-product-review.entity";
+import { SellerToken } from "src/notification/entity/seller-token.entity";
+import { FCMService } from "src/notification/service/fcm.service";
+import { BuyerToken } from "src/notification/entity/buyer-token.entity";
 
 @Module({
   imports: [
@@ -26,6 +29,8 @@ import { AdminProductReview } from "src/admin/entity/admin-product-review.entity
       Seller,
       Store,
       Product,
+      SellerToken,
+      BuyerToken,
       ProductPicture,
       ProductCategory,
       ProductReview,
@@ -36,7 +41,7 @@ import { AdminProductReview } from "src/admin/entity/admin-product-review.entity
     // MailerModule,
     JwtLoginModule,
   ],
-  providers: [ProductService, CategoryService, ReviewService, SupabaseService],
+  providers: [ProductService, CategoryService, ReviewService, SupabaseService,FCMService],
   controllers: [ProductController, CategoryController, ReviewController],
 })
 export class ProductModule {}
