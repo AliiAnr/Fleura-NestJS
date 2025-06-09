@@ -15,6 +15,8 @@ import { CreateOrderDto } from "../dto/create-order.dto";
 import { BuyerAddress } from "src/buyer/entity/buyer.address.entity";
 import { Payment, PaymentMethod } from "../entity/payment.entity";
 import { PaymentService } from "./payment.service";
+import { FCMService } from "src/notification/service/fcm.service";
+import { title } from "process";
 
 @Injectable()
 export class OrderService {
@@ -33,7 +35,8 @@ export class OrderService {
     private readonly orderItemRepository: Repository<OrderItem>,
     @InjectRepository(BuyerAddress)
     private readonly buyerAddressRepository: Repository<BuyerAddress>,
-    private paymentService: PaymentService
+    private paymentService: PaymentService,
+    private notificationService: FCMService
   ) {}
 
   async createOrder(buyerId: string, request: CreateOrderDto) {
@@ -54,14 +57,14 @@ export class OrderService {
     // order.buyer = buyer;
 
     // if (request.taken_method === "delivery") {
-      const userAddress = await this.buyerAddressRepository.findOne({
-        where: { id: request.addressId, buyer: { id: buyerId } },
-      });
-      if (!userAddress) {
-        throw new NotFoundException("Address not found");
-      }
-      // order.address = userAddress;
-      order.addressId = userAddress.id;
+    const userAddress = await this.buyerAddressRepository.findOne({
+      where: { id: request.addressId, buyer: { id: buyerId } },
+    });
+    if (!userAddress) {
+      throw new NotFoundException("Address not found");
+    }
+    // order.address = userAddress;
+    order.addressId = userAddress.id;
     // }
 
     // console.log(order);
@@ -159,6 +162,19 @@ export class OrderService {
     const payment = await this.paymentRepository.findOne({
       where: { orderId: order.id },
     });
+
+    this.notificationService.sendNotificationByBuyerId(
+      "Pesanan Berhasil Dibuat",
+      `Pesanan Anda telah berhasil dibuat. Silakan cek detail pesanan Anda.`,
+      buyerId
+    );
+
+    this.notificationService.sendNotificationBySellerId(
+      "Pesanan Baru",
+      `Pesanan baru telah dibuat oleh ${buyer.name}. Silakan cek detail pesanan.`,
+      store.id
+    );
+
     return payment;
   }
 
@@ -247,6 +263,32 @@ export class OrderService {
       console.log(buyer.point);
       // console.log(earnedPoint);
       await this.buyerRepository.save(buyer);
+    }
+
+    if (status === OrderStatus.DELIVERY) {
+      this.notificationService.sendNotificationByBuyerId(
+        "Pesanan Sedang Dikirim",
+        `Pesanan Anda sedang dalam proses pengiriman`,
+        order.buyer.id
+      );
+    } else if (status === OrderStatus.PICKUP) {
+      this.notificationService.sendNotificationByBuyerId(
+        "Pesanan Siap Diambil",
+        `Pesanan Anda sudah siap untuk diambil di toko`,
+        order.buyer.id
+      );
+    } else if (status === OrderStatus.COMPLETED) {
+      this.notificationService.sendNotificationByBuyerId(
+        "Pesanan Selesai",
+        `Pesanan Anda telah selesai. Terima kasih telah berbelanja!`,
+        order.buyer.id
+      );
+    } else if (status === OrderStatus.PROCESS) {
+      this.notificationService.sendNotificationByBuyerId(
+        "Pesanan Sedang Diproses",
+        `Pesanan Anda sedang dalam proses. Silakan tunggu sebentar.`,
+        order.buyer.id
+      );
     }
 
     return this.orderRepository.save(order);
