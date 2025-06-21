@@ -20,6 +20,7 @@ import { PaymentService } from "./service/payment.service";
 import { FCMService } from "src/notification/service/fcm.service";
 import { BuyerToken } from "src/notification/entity/buyer-token.entity";
 import { SellerToken } from "src/notification/entity/seller-token.entity";
+import { OrderGateway } from "./gateway/order.gateway";
 
 @Module({
   imports: [
@@ -40,7 +41,7 @@ import { SellerToken } from "src/notification/entity/seller-token.entity";
     HttpModule,
     JwtLoginModule,
   ],
-  providers: [OrderService, PaymentService, FCMService],
+  providers: [OrderService, PaymentService, FCMService, OrderGateway],
   controllers: [OrderController, PaymentController],
 })
 export class OrderModule {}

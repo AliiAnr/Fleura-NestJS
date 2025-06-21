@@ -19,6 +19,7 @@ import {
 } from "../entity/payment.entity";
 import * as crypto from "crypto";
 import { FCMService } from "src/notification/service/fcm.service";
+import { OrderGateway } from "../gateway/order.gateway";
 
 @Injectable()
 export class PaymentService {
@@ -37,7 +38,8 @@ export class PaymentService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Buyer)
     private readonly buyerRepository: Repository<Buyer>,
-    private readonly notificationService: FCMService
+    private readonly notificationService: FCMService,
+    private readonly orderGateway: OrderGateway
   ) {}
 
   async createQrisTransaction(orderId: string) {
@@ -282,6 +284,18 @@ export class PaymentService {
       await this.paymentRepository.save(newPayment);
     }
 
+    // Emit ke buyer
+    this.orderGateway.sendPaymentStatusUpdate(payment.order.buyer.id, {
+      orderId: order_id,
+      paymentStatus: status,
+    });
+
+    // Emit ke seller juga (opsional)
+    this.orderGateway.sendPaymentStatusUpdate(payment.order.store.seller.id, {
+      orderId: order_id,
+      paymentStatus: status,
+    });
+
     return { message: `Payment status updated to ${status}` };
   }
 
@@ -325,6 +339,18 @@ export class PaymentService {
         payment.order.store.seller.id
       );
     }
+
+    // Emit ke buyer
+    this.orderGateway.sendPaymentStatusUpdate(payment.order.buyer.id, {
+      orderId,
+      paymentStatus: status,
+    });
+
+    // Emit ke seller juga (opsional)
+    this.orderGateway.sendPaymentStatusUpdate(payment.order.store.seller.id, {
+      orderId,
+      paymentStatus: status,
+    });
 
     return { message: `Payment status updated to ${status}` };
   }

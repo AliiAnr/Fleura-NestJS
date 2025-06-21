@@ -17,6 +17,7 @@ import { Payment, PaymentMethod } from "../entity/payment.entity";
 import { PaymentService } from "./payment.service";
 import { FCMService } from "src/notification/service/fcm.service";
 import { title } from "process";
+import { OrderGateway } from "../gateway/order.gateway";
 
 @Injectable()
 export class OrderService {
@@ -36,11 +37,12 @@ export class OrderService {
     @InjectRepository(BuyerAddress)
     private readonly buyerAddressRepository: Repository<BuyerAddress>,
     private paymentService: PaymentService,
-    private notificationService: FCMService
+    private notificationService: FCMService,
+    private readonly orderGateway: OrderGateway
   ) {}
 
   async createOrder(buyerId: string, request: CreateOrderDto) {
-    const shippingFee = 20000;
+    const shippingFee = 15000;
 
     const buyer = await this.buyerRepository.findOne({
       where: { id: buyerId },
@@ -175,6 +177,11 @@ export class OrderService {
       store.id
     );
 
+    // this.orderGateway.sendOrderStatusUpdate(order.buyer.id, {
+    //   orderId: order.id,
+    //   newStatus: order.status,
+    // });
+
     return payment;
   }
 
@@ -291,6 +298,10 @@ export class OrderService {
       );
     }
 
+    this.orderGateway.sendOrderStatusUpdate(order.buyer.id, {
+      orderId,
+      newStatus: status,
+    });
     return this.orderRepository.save(order);
   }
 
