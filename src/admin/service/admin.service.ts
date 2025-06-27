@@ -163,7 +163,7 @@ export class AdminService {
       await this.productRepository.save(product);
     }
 
-    if( status === AdminReviewStatus.REJECTED) {
+    if (status === AdminReviewStatus.REJECTED) {
       // Kirim notifikasi ke seller jika review ditolak
       this.notificationService.sendNotificationBySellerId(
         "Produk Anda Ditolak",
@@ -224,16 +224,15 @@ export class AdminService {
         "Toko Anda Ditolak",
         `Toko Anda ${store.name} telah ditolak oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
         store.seller.id
-      );  
-    } else if (status === AdminReviewStatus.ACCEPTED) { 
+      );
+    } else if (status === AdminReviewStatus.ACCEPTED) {
       // Kirim notifikasi ke seller jika review diterima
       this.notificationService.sendNotificationBySellerId(
         "Toko Anda Diterima",
         `Toko Anda ${store.name} telah diterima oleh admin. Toko Anda sekarang dapat dilihat oleh pembeli.`,
         store.seller.id
       );
-    }
-    else if (status === AdminReviewStatus.NEED_REVIEW) {
+    } else if (status === AdminReviewStatus.NEED_REVIEW) {
       // Kirim notifikasi ke seller jika review perlu ditinjau ulang
       this.notificationService.sendNotificationBySellerId(
         "Toko Perlu Tinjauan Ulang",
@@ -243,5 +242,47 @@ export class AdminService {
     }
 
     return savedReview;
+  }
+
+  async getProductReview(productId: string): Promise<AdminProductReview> {
+    const review = await this.adminProductReviewRepository.findOne({
+      where: { product: { id: productId } },
+      relations: ["product"],
+      order: { created_at: "DESC" }, // jika ingin review terbaru
+    });
+
+    if (!review) {
+      throw new NotFoundException("Product review not found");
+    }
+
+    return review;
+  }
+
+  async getStoreReview(storeId: string): Promise<AdminStoreReview> {
+    const review = await this.adminStoreReviewRepository.findOne({
+      where: { store: { id: storeId } },
+      relations: ["store"],
+      order: { created_at: "DESC" },
+    });
+
+    if (!review) {
+      throw new NotFoundException("Store review not found");
+    }
+
+    return review;
+  }
+
+  async getSellerReview(sellerId: string): Promise<AdminSellerReview> {
+    const review = await this.adminSellerReviewRepository.findOne({
+      where: { seller: { id: sellerId } },
+      relations: ["seller"],
+      order: { created_at: "DESC" },
+    });
+
+    if (!review) {
+      throw new NotFoundException("Seller review not found");
+    }
+
+    return review;
   }
 }

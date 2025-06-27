@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Get,
   HttpException,
   HttpStatus,
+  Param,
   Post,
   Req,
   UnprocessableEntityException,
@@ -110,6 +112,57 @@ export class AdminController {
           "Store review successful"
         );
       }
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
+  @Get("review/product/:productId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
+  async getProductReview(
+    @Param("productId") productId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const review = await this.userService.getProductReview(productId);
+      return new ResponseWrapper(HttpStatus.OK, "Success", review);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
+  @Get("review/store/:storeId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
+  async getStoreReview(
+    @Param("storeId") storeId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const review = await this.userService.getStoreReview(storeId);
+      return new ResponseWrapper(HttpStatus.OK, "Success", review);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
+  @Get("review/seller/:sellerId")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
+  async getSellerReview(
+    @Param("sellerId") sellerId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const review = await this.userService.getSellerReview(sellerId);
+      return new ResponseWrapper(HttpStatus.OK, "Success", review);
     } catch (error) {
       throw new HttpException(
         new ResponseWrapper(error.status, error.message),
