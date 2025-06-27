@@ -142,10 +142,17 @@ export class AdminService {
     // Cari produk berdasarkan productId
     const product = await this.productRepository.findOne({
       where: { id: productId },
+      relations: ["store"],
     });
+    console.log(product)
+    const seller = await this.sellerRepository.findOne({
+      where: {id: product.store.sellerId}
+    })
+    console.log(seller)
     if (!product) {
       throw new NotFoundException("Product not found");
     }
+
 
     // Buat review baru
     const review = this.adminProductReviewRepository.create({
@@ -154,8 +161,12 @@ export class AdminService {
       status,
     });
 
+    console.log(review)
+
     // Simpan review ke database
     const savedReview = await this.adminProductReviewRepository.save(review);
+
+    
 
     // Jika status review adalah ACCEPTED, perbarui kolom admin_verified_at di tabel product
     if (status === AdminReviewStatus.ACCEPTED) {
@@ -168,23 +179,24 @@ export class AdminService {
       this.notificationService.sendNotificationBySellerId(
         "Produk Anda Ditolak",
         `Produk Anda  ${product.name} telah ditolak oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
-        product.store.seller.id
+        seller.id
       );
     } else if (status === AdminReviewStatus.ACCEPTED) {
       // Kirim notifikasi ke seller jika review diterima
       this.notificationService.sendNotificationBySellerId(
         "Produk Anda Diterima",
         `Produk Anda ${product.name} telah diterima oleh admin. Produk Anda sekarang dapat dilihat oleh pembeli.`,
-        product.store.seller.id
+        seller.id
       );
     } else if (status === AdminReviewStatus.NEED_REVIEW) {
       // Kirim notifikasi ke seller jika review perlu ditinjau ulang
       this.notificationService.sendNotificationBySellerId(
         "Produk Perlu Tinjauan Ulang",
         `Produk Anda ${product.name} perlu ditinjau ulang oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
-        product.store.seller.id
+        seller.id
       );
     }
+    console.log(savedReview)
 
     return savedReview;
   }
@@ -198,9 +210,13 @@ export class AdminService {
     const store = await this.storeRepository.findOne({
       where: { id: storeId },
     });
+    const seller = await this.sellerRepository.findOne({
+      where: {id: store.sellerId}
+    })
     if (!store) {
       throw new NotFoundException("Store not found");
     }
+    
 
     // Buat review baru
     const review = this.adminStoreReviewRepository.create({
@@ -223,21 +239,21 @@ export class AdminService {
       this.notificationService.sendNotificationBySellerId(
         "Toko Anda Ditolak",
         `Toko Anda ${store.name} telah ditolak oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
-        store.seller.id
+        seller.id
       );
     } else if (status === AdminReviewStatus.ACCEPTED) {
       // Kirim notifikasi ke seller jika review diterima
       this.notificationService.sendNotificationBySellerId(
         "Toko Anda Diterima",
         `Toko Anda ${store.name} telah diterima oleh admin. Toko Anda sekarang dapat dilihat oleh pembeli.`,
-        store.seller.id
+        seller.id
       );
     } else if (status === AdminReviewStatus.NEED_REVIEW) {
       // Kirim notifikasi ke seller jika review perlu ditinjau ulang
       this.notificationService.sendNotificationBySellerId(
         "Toko Perlu Tinjauan Ulang",
         `Toko Anda ${store.name} perlu ditinjau ulang oleh admin. Silakan periksa kembali informasi yang Anda berikan.`,
-        store.seller.id
+        seller.id
       );
     }
 
