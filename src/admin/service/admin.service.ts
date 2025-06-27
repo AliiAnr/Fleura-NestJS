@@ -263,7 +263,7 @@ export class AdminService {
   async getProductReview(productId: string): Promise<AdminProductReview> {
     const review = await this.adminProductReviewRepository.findOne({
       where: { product: { id: productId } },
-      relations: ["product"],
+
       order: { created_at: "DESC" }, // jika ingin review terbaru
     });
 
@@ -277,7 +277,7 @@ export class AdminService {
   async getStoreReview(storeId: string): Promise<AdminStoreReview> {
     const review = await this.adminStoreReviewRepository.findOne({
       where: { store: { id: storeId } },
-      relations: ["store"],
+
       order: { created_at: "DESC" },
     });
 
@@ -291,7 +291,7 @@ export class AdminService {
   async getSellerReview(sellerId: string): Promise<AdminSellerReview> {
     const review = await this.adminSellerReviewRepository.findOne({
       where: { seller: { id: sellerId } },
-      relations: ["seller"],
+
       order: { created_at: "DESC" },
     });
 
