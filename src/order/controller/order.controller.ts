@@ -66,7 +66,7 @@ export class OrderController {
   @Roles("admin")
   async getActivedOrder(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
-      const order = await this.orderService.getAllUnCompletedOrder;
+      const order = await this.orderService.getAllUnCompletedOrder();
       return new ResponseWrapper(HttpStatus.OK, "Order retrieved", order);
     } catch (error) {
       throw new HttpException(
