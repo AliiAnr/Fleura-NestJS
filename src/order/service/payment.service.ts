@@ -47,8 +47,7 @@ export class PaymentService {
       where: { orderId },
     });
 
-
-    console.log(existingPayment)
+    console.log(existingPayment);
 
     if (existingPayment) {
       throw new HttpException(
@@ -66,7 +65,7 @@ export class PaymentService {
       relations: ["buyer", "orderItems", "orderItems.product"],
     });
 
-    console.log(order)
+    console.log(order);
 
     // console.log('Order: ', order);
 
@@ -112,7 +111,7 @@ export class PaymentService {
       },
     };
 
-    console.log(payload)
+    console.log(payload);
 
     // console.log("Payload: ", payload);
 
@@ -127,7 +126,7 @@ export class PaymentService {
       const response = await firstValueFrom(
         this.httpService.post(midtransQRISBaseURL, payload, { headers })
       );
-      console.log('Response: ', response);
+      console.log("Response: ", response);
 
       const result = {
         qris: response.data.actions[0].url,
@@ -150,8 +149,18 @@ export class PaymentService {
 
       return result;
     } catch (error) {
-      // console.error('Error: ', error);
-      throw error.response?.data || error.message;
+      console.error(
+        "❌ Midtrans error:",
+        error?.response?.data || error.message || error
+      );
+
+      throw new HttpException(
+        {
+          message: "Gagal menghubungi Midtrans",
+          detail: error?.response?.data || error.message || error,
+        },
+        HttpStatus.BAD_GATEWAY
+      );
     }
   }
 
