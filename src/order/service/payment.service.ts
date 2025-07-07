@@ -47,6 +47,9 @@ export class PaymentService {
       where: { orderId },
     });
 
+
+    console.log(existingPayment)
+
     if (existingPayment) {
       throw new HttpException(
         { message: "Payment already exists", payment: existingPayment },
@@ -62,6 +65,8 @@ export class PaymentService {
       where: { id: orderId },
       relations: ["buyer", "orderItems", "orderItems.product"],
     });
+
+    console.log(order)
 
     // console.log('Order: ', order);
 
@@ -120,7 +125,7 @@ export class PaymentService {
       const response = await firstValueFrom(
         this.httpService.post(midtransQRISBaseURL, payload, { headers })
       );
-      // console.log('Response: ', response);
+      console.log('Response: ', response);
 
       const result = {
         qris: response.data.actions[0].url,
