@@ -112,6 +112,8 @@ export class PaymentService {
       },
     };
 
+    console.log(payload)
+
     // console.log("Payload: ", payload);
 
     const headers = {
