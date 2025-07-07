@@ -57,7 +57,7 @@ export class PaymentService {
     }
     // console.log(this.midtransBaseUrl)
     const midtransQRISBaseURL = `${this.midtransBaseUrl}v2/charge`;
-    const shippingFee = 20000;
+    const shippingFee = 15000;
     // Dapatkan informasi order
     // console.log(midtransQRISBaseURL);
     const order = await this.orderRepository.findOne({
