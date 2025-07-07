@@ -8,7 +8,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Buyer } from "src/buyer/entity/buyer.entity";
 import { Product } from "src/product/entity/product.entity";
 import { Store } from "src/store/entity/store.entity";
-import { Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import { Order, OrderStatus } from "../entity/order.entity";
 import { OrderItem } from "../entity/order-item.entity";
 import { CreateOrderDto } from "../dto/create-order.dto";
@@ -225,6 +225,46 @@ export class OrderService {
         "orderItems.product.picture",
         "payment",
       ],
+    });
+  }
+
+  async getAllUnCompletedOrder() {
+    // Ambil semua order yang status-nya BUKAN COMPLETED
+    return this.orderRepository.find({
+      where: {
+        status: Not(OrderStatus.COMPLETED),
+      },
+      relations: [
+        "buyer",
+        "store",
+        "orderItems",
+        "orderItems.product",
+        "orderItems.product.store",
+        "orderItems.product.category",
+        "orderItems.product.picture",
+        "payment",
+      ],
+      order: { created_at: "DESC" },
+    });
+  }
+
+  async getAllCompletedOrder() {
+    // Ambil semua order yang status-nya COMPLETED
+    return this.orderRepository.find({
+      where: {
+        status: OrderStatus.COMPLETED,
+      },
+      relations: [
+        "buyer",
+        "store",
+        "orderItems",
+        "orderItems.product",
+        "orderItems.product.store",
+        "orderItems.product.category",
+        "orderItems.product.picture",
+        "payment",
+      ],
+      order: { created_at: "DESC" },
     });
   }
 

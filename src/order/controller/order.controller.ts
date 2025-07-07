@@ -47,6 +47,35 @@ export class OrderController {
     }
   }
 
+  @Get("completed")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
+  async getCompletedOrder(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const order = await this.orderService.getAllCompletedOrder();
+      return new ResponseWrapper(HttpStatus.OK, "Order retrieved", order);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+  @Get("active")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("admin")
+  async getActivedOrder(@Req() req: any): Promise<ResponseWrapper<any>> {
+    try {
+      const order = await this.orderService.getAllUnCompletedOrder;
+      return new ResponseWrapper(HttpStatus.OK, "Order retrieved", order);
+    } catch (error) {
+      throw new HttpException(
+        new ResponseWrapper(error.status, error.message),
+        error.status
+      );
+    }
+  }
+
   @Get("detail/:id")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("buyer", "seller", "admin")
@@ -88,7 +117,7 @@ export class OrderController {
 
   @Get("store/:id")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller","admin")
+  @Roles("seller", "admin")
   async getOrderByStore(
     @Req() req: any,
     @Param(":id") storeId: string
