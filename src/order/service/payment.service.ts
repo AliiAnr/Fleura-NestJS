@@ -315,7 +315,11 @@ export class PaymentService {
   async updatePaymentStatus(orderId: string, status: PaymentStatus) {
     const payment = await this.paymentRepository.findOne({
       where: { orderId },
+      relations: ["order", "order.buyer", "order.store"],
+      
+      
     });
+
 
     if (!payment) {
       throw new HttpException(
