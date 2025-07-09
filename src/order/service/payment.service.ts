@@ -304,7 +304,7 @@ export class PaymentService {
       // Kirim ke room orderId
       orderId: order_id,
 
-      paymentStatus: status,
+      status: status,
       message: `Pembayaran untuk pesanan ${order_id} telah diperbarui menjadi ${status}.`,
       timestamp: new Date().toISOString(),
     });
@@ -357,7 +357,7 @@ export class PaymentService {
       // Kirim ke room orderId
       orderId,
 
-      paymentStatus: status,
+      status: status,
       message: `Pembayaran untuk pesanan ${orderId} telah diperbarui menjadi ${status}.`,
       timestamp: new Date().toISOString(),
     });
