@@ -338,9 +338,12 @@ export class OrderService {
       );
     }
 
-    this.orderGateway.sendOrderStatusUpdate(order.buyer.id, {
+    this.orderGateway.sendOrderStatusUpdate(orderId, {
       orderId,
-      newStatus: status,
+      status: status,
+      message: `Status pesanan ${orderId} telah diperbarui menjadi ${status}.`,
+      // Tambahkan data lain yang relevan yang mungkin dibutuhkan di frontend
+      timestamp: new Date().toISOString()
     });
     return this.orderRepository.save(order);
   }

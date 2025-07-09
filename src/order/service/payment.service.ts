@@ -300,16 +300,13 @@ export class PaymentService {
       await this.paymentRepository.save(newPayment);
     }
 
-    // Emit ke buyer
-    this.orderGateway.sendPaymentStatusUpdate(payment.order.buyer.id, {
+    this.orderGateway.sendPaymentStatusUpdate(order_id, {
+      // Kirim ke room orderId
       orderId: order_id,
-      paymentStatus: status,
-    });
 
-    // Emit ke seller juga (opsional)
-    this.orderGateway.sendPaymentStatusUpdate(payment.order.store.seller.id, {
-      orderId: order_id,
       paymentStatus: status,
+      message: `Pembayaran untuk pesanan ${order_id} telah diperbarui menjadi ${status}.`,
+      timestamp: new Date().toISOString(),
     });
 
     return { message: `Payment status updated to ${status}` };
@@ -356,18 +353,14 @@ export class PaymentService {
       );
     }
 
-    // Emit ke buyer
-    this.orderGateway.sendPaymentStatusUpdate(payment.order.buyer.id, {
+    this.orderGateway.sendPaymentStatusUpdate(orderId, {
+      // Kirim ke room orderId
       orderId,
-      paymentStatus: status,
-    });
 
-    // Emit ke seller juga (opsional)
-    this.orderGateway.sendPaymentStatusUpdate(payment.order.store.seller.id, {
-      orderId,
       paymentStatus: status,
+      message: `Pembayaran untuk pesanan ${orderId} telah diperbarui menjadi ${status}.`,
+      timestamp: new Date().toISOString(),
     });
-
     return { message: `Payment status updated to ${status}` };
   }
 
