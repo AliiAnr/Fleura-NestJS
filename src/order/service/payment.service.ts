@@ -315,11 +315,12 @@ export class PaymentService {
   async updatePaymentStatus(orderId: string, status: PaymentStatus) {
     const payment = await this.paymentRepository.findOne({
       where: { orderId },
-      relations: ["order", "order.buyer", "order.store"],
-      
-      
     });
 
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ["buyer", "store"],
+    });
 
     if (!payment) {
       throw new HttpException(
@@ -336,24 +337,24 @@ export class PaymentService {
       this.notificationService.sendNotificationByBuyerId(
         "Pembayarab Berhasil",
         `Pembayaran untuk pesanan ${orderId} telah berhasil.`,
-        payment.order.buyer.id
+        order.buyer.id
       );
       this.notificationService.sendNotificationBySellerId(
         "Pembayaran Berhasil",
         `Pembayaran untuk pesanan ${orderId} telah berhasil.`,
-        payment.order.store.seller.id
+        order.store.sellerId
       );
     } else if (status === PaymentStatus.EXPIRE) {
       // Notify buyer about payment expiration
       this.notificationService.sendNotificationByBuyerId(
         "Pembayaran Kadaluarsa",
         `Pembayaran untuk pesanan ${orderId} telah kadaluarsa.`,
-        payment.order.buyer.id
+        order.buyer.id
       );
       this.notificationService.sendNotificationBySellerId(
         "Pembayaran Kadaluarsa",
         `Pembayaran untuk pesanan ${orderId} telah kadaluarsa.`,
-        payment.order.store.seller.id
+        order.store.sellerId
       );
     }
 
