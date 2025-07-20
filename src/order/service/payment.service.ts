@@ -299,6 +299,36 @@ export class PaymentService {
       });
       await this.paymentRepository.save(newPayment);
     }
+    const order = await this.orderRepository.findOne({
+      where: { id: order_id },
+      relations: ["buyer", "store"],
+    });
+
+    if (status === PaymentStatus.PAID) {
+      // Notify buyer about payment success
+      this.notificationService.sendNotificationByBuyerId(
+        "Pembayaran Berhasil",
+        `Pembayaran untuk pesanan ${order_id} telah berhasil.`,
+        order.buyer.id
+      );
+      this.notificationService.sendNotificationBySellerId(
+        "Pembayaran Berhasil",
+        `Pembayaran untuk pesanan ${order_id} telah berhasil.`,
+        order.store.sellerId
+      );
+    } else if (status === PaymentStatus.EXPIRE) {
+      // Notify buyer about payment expiration
+      this.notificationService.sendNotificationByBuyerId(
+        "Pembayaran Kadaluarsa",
+        `Pembayaran untuk pesanan ${order_id} telah kadaluarsa.`,
+        order.buyer.id
+      );
+      this.notificationService.sendNotificationBySellerId(
+        "Pembayaran Kadaluarsa",
+        `Pembayaran untuk pesanan ${order_id} telah kadaluarsa.`,
+        order.store.sellerId
+      );
+    }
 
     this.orderGateway.sendPaymentStatusUpdate(order_id, {
       // Kirim ke room orderId
@@ -335,7 +365,7 @@ export class PaymentService {
     if (status === PaymentStatus.PAID) {
       // Notify buyer about payment success
       this.notificationService.sendNotificationByBuyerId(
-        "Pembayarab Berhasil",
+        "Pembayaran Berhasil",
         `Pembayaran untuk pesanan ${orderId} telah berhasil.`,
         order.buyer.id
       );
