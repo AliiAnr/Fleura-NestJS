@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "cross-env NODE_OPTIONS=--max-old-space-size=2048 nest start",
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=2048 nest build",
+    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
