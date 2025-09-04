@@ -32,6 +32,7 @@ import { CategoryService } from "../service/category.service";
 import { CreateCategoryDto } from "../dto/create.category.dto";
 import { CreateReviewDto } from "../dto/create.review.dto";
 import { ReviewService } from "../service/review.service";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("product/review")
 export class ReviewController {
@@ -51,10 +52,7 @@ export class ReviewController {
       );
       return new ResponseWrapper(HttpStatus.CREATED, "Review created successfully");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Get("product/:productId")
@@ -68,10 +66,7 @@ export class ReviewController {
       const review = await this.reviewService.getReviewByProductId(productId);
       return new ResponseWrapper(HttpStatus.OK, "Review found", review);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -86,10 +81,7 @@ export class ReviewController {
       const review = await this.reviewService.getReviewByBuyerId(buyerId);
       return new ResponseWrapper(HttpStatus.OK, "Review found", review);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   

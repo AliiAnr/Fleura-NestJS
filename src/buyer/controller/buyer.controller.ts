@@ -24,6 +24,7 @@ import { Roles } from "src/auth/jwt/decorators/roles.decorator";
 import { JwtLoginAuthGuard } from "src/auth/jwt/guards/jwt.guard";
 import { UpdateBuyerAddressDto } from "../dto/update.buyer-address.dto";
 import { CreateBuyerAddressDto } from "../dto/create.buyer-address.dto";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("buyer")
 export class BuyerController {
@@ -39,10 +40,7 @@ export class BuyerController {
         return new ResponseWrapper(HttpStatus.CREATED, "Register Successful");
       }
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -57,10 +55,7 @@ export class BuyerController {
       const user = await this.userService.getUserById(userId);
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -74,10 +69,7 @@ export class BuyerController {
       const user = await this.userService.getUserById(req.user.id);
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   
@@ -90,10 +82,7 @@ export class BuyerController {
       const users = await this.userService.getAllUsers();
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -109,10 +98,7 @@ export class BuyerController {
       const addresses = await this.userService.getAddress(id);
       return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+     wrapAndThrowHttpException(error);
     }
   }
 
@@ -132,10 +118,7 @@ export class BuyerController {
       );
       return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -152,10 +135,7 @@ export class BuyerController {
       await this.userService.updateUserName(id, body.username);
       return new ResponseWrapper(HttpStatus.OK, "Username change Successful");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -177,10 +157,7 @@ export class BuyerController {
         access_token,
       });
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -197,10 +174,7 @@ export class BuyerController {
       await this.userService.updatePhone(id, body.phone);
       return new ResponseWrapper(HttpStatus.OK, "Phone change Successful");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -215,10 +189,7 @@ export class BuyerController {
       await this.userService.resetPassword(req.user.id, body.newPassword);
       return new ResponseWrapper(HttpStatus.OK, "Password Change Successful");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -239,10 +210,7 @@ export class BuyerController {
       );
       return new ResponseWrapper(HttpStatus.OK, "Address update successful");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Post("address")
@@ -261,10 +229,7 @@ export class BuyerController {
         "Address created successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -281,10 +246,7 @@ export class BuyerController {
       await this.userService.deleteAddress(id, addressId);
       return new ResponseWrapper(HttpStatus.OK, "Address deleted successfully");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }

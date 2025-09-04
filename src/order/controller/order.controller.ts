@@ -19,6 +19,7 @@ import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { PaymentService } from "../service/payment.service";
 import { OrderStatus } from "../entity/order.entity";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("order")
 export class OrderController {
@@ -40,10 +41,7 @@ export class OrderController {
       const order = await this.orderService.createOrder(id, request);
       return new ResponseWrapper(HttpStatus.CREATED, "Order created", order);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -55,10 +53,7 @@ export class OrderController {
       const order = await this.orderService.getAllCompletedOrder();
       return new ResponseWrapper(HttpStatus.OK, "Order retrieved", order);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Get("active")
@@ -69,10 +64,7 @@ export class OrderController {
       const order = await this.orderService.getAllUnCompletedOrder();
       return new ResponseWrapper(HttpStatus.OK, "Order retrieved", order);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -88,10 +80,7 @@ export class OrderController {
       const order = await this.orderService.getOrder(orderId);
       return new ResponseWrapper(HttpStatus.OK, "Order retrieved", order);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -108,10 +97,7 @@ export class OrderController {
       const orders = await this.orderService.getOrdersByBuyerId(req.user.id);
       return new ResponseWrapper(HttpStatus.OK, "Orders retrieved", orders);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -126,10 +112,7 @@ export class OrderController {
       const order = await this.orderService.getOrdersByStore(storeId);
       return new ResponseWrapper(HttpStatus.OK, "Order retrieved", order);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -146,10 +129,7 @@ export class OrderController {
       const order = await this.orderService.updateOrderStatus(orderId, status);
       return new ResponseWrapper(HttpStatus.OK, "Order status updated");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }

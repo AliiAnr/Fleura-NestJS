@@ -30,6 +30,7 @@ import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { Multer, memoryStorage } from "multer";
 import { DeletePictureDto } from "../dto/delete.picture.dto";
 import { UpdateProductCategoryDto } from "../dto/update-product-category.dto";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("product")
 export class ProductController {
@@ -51,10 +52,7 @@ export class ProductController {
         "Product created successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -66,13 +64,10 @@ export class ProductController {
       const products = await this.productService.getAllProducts();
       return new ResponseWrapper(HttpStatus.OK, "Success", products);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
-  @Get('verified')
+  @Get("verified")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "admin", "buyer")
   async getVerifiedProducts(@Req() req: any): Promise<ResponseWrapper<any>> {
@@ -80,13 +75,10 @@ export class ProductController {
       const products = await this.productService.getAllVerifiedProducts();
       return new ResponseWrapper(HttpStatus.OK, "Success", products);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
-  @Get('unverified')
+  @Get("unverified")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "admin", "buyer")
   async getUnverifiedProducts(@Req() req: any): Promise<ResponseWrapper<any>> {
@@ -94,10 +86,7 @@ export class ProductController {
       const products = await this.productService.getAllUnverifiedProducts();
       return new ResponseWrapper(HttpStatus.OK, "Success", products);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -112,10 +101,7 @@ export class ProductController {
       const products = await this.productService.getProductsByStoreId(storeId);
       return new ResponseWrapper(HttpStatus.OK, "Success", products);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -131,10 +117,7 @@ export class ProductController {
         await this.productService.getProductByProductId(productId);
       return new ResponseWrapper(HttpStatus.OK, "Success", product);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -155,16 +138,13 @@ export class ProductController {
       );
       return new ResponseWrapper(HttpStatus.OK, "Product updated successfully");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
   @Delete("picture")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("seller","admin")
+  @Roles("seller", "admin")
   async deletePicture(
     @Body() request: DeletePictureDto,
     @Query("sellerId") sellerId: string
@@ -179,10 +159,7 @@ export class ProductController {
         "Product picture delete successful"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -200,7 +177,7 @@ export class ProductController {
     @Body() request: { productId: string },
     @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
-    const maxSize = 500 * 1024; // 500 KB
+    const maxSize = 1 * 1024 * 1024; // 500 KB
     for (const f of files) {
       if (f.size > maxSize) {
         return new ResponseWrapper(
@@ -231,10 +208,7 @@ export class ProductController {
         "Product picture upload successful"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -258,10 +232,7 @@ export class ProductController {
         "Product category updated successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Delete("category")
@@ -283,10 +254,7 @@ export class ProductController {
         "Product category deleted successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }

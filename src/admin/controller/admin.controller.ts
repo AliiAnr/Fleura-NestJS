@@ -19,6 +19,7 @@ import { Roles } from "src/auth/jwt/decorators/roles.decorator";
 import { AdminSellerReviewDto } from "../dto/seller-review.dto";
 import { AdminProductReviewDto } from "../dto/product-review.dto";
 import { AdminStoreReviewDto } from "../dto/store-review.dto";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("admin")
 export class AdminController {
@@ -69,10 +70,7 @@ export class AdminController {
         );
       }
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Post("review/product")
@@ -91,10 +89,7 @@ export class AdminController {
         );
       }
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Post("review/store")
@@ -113,10 +108,7 @@ export class AdminController {
         );
       }
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -130,10 +122,7 @@ export class AdminController {
       const review = await this.userService.getProductReview(productId);
       return new ResponseWrapper(HttpStatus.OK, "Success", review);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -147,10 +136,7 @@ export class AdminController {
       const review = await this.userService.getStoreReview(storeId);
       return new ResponseWrapper(HttpStatus.OK, "Success", review);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -164,10 +150,7 @@ export class AdminController {
       const review = await this.userService.getSellerReview(sellerId);
       return new ResponseWrapper(HttpStatus.OK, "Success", review);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }

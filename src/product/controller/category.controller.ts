@@ -29,6 +29,7 @@ import { Multer, memoryStorage } from "multer";
 import { DeletePictureDto } from "../dto/delete.picture.dto";
 import { CategoryService } from "../service/category.service";
 import { CreateCategoryDto } from "../dto/create.category.dto";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("category")
 export class CategoryController {
@@ -47,10 +48,7 @@ export class CategoryController {
         "Category created successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -67,10 +65,7 @@ export class CategoryController {
         "Category deleted successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -86,10 +81,7 @@ export class CategoryController {
         categories
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }

@@ -29,6 +29,7 @@ import { diskStorage } from "multer";
 import { extname } from "path";
 import { Multer } from "multer";
 import { UpdateSellerAddressDto } from "../dto/update.seller-address.dto";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("seller")
 export class SellerController {
@@ -44,10 +45,7 @@ export class SellerController {
         return new ResponseWrapper(HttpStatus.CREATED, "Register Successful");
       }
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -79,10 +77,7 @@ export class SellerController {
       );
       return new ResponseWrapper(HttpStatus.OK, "Seller update successful");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -98,10 +93,7 @@ export class SellerController {
       const addresses = await this.userService.getAddress(id);
       return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Get("address/detail/:addressId")
@@ -120,10 +112,7 @@ export class SellerController {
       );
       return new ResponseWrapper(HttpStatus.OK, "Address retrieved", addresses);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -145,10 +134,7 @@ export class SellerController {
         access_token,
       });
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -161,7 +147,7 @@ export class SellerController {
     @UploadedFile() file: Multer.File,
     @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
-    const maxSize = 500 * 1024; // 500 KB
+    const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
       return new ResponseWrapper(
         HttpStatus.UNPROCESSABLE_ENTITY,
@@ -174,10 +160,7 @@ export class SellerController {
       const updatedSeller = await this.userService.uploadPicture(id, file);
       return new ResponseWrapper(HttpStatus.OK, "Picture upload successful");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Put("identity")
@@ -189,7 +172,7 @@ export class SellerController {
     @UploadedFile() file: Multer.File,
     @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
-    const maxSize = 500 * 1024; // 500 KB
+    const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
       return new ResponseWrapper(
         HttpStatus.UNPROCESSABLE_ENTITY,
@@ -208,10 +191,7 @@ export class SellerController {
         "Identity picture upload successful"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -226,10 +206,7 @@ export class SellerController {
       await this.userService.resetPassword(req.user.id, body.newPassword);
       return new ResponseWrapper(HttpStatus.OK, "Password Change Successful");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -247,14 +224,7 @@ export class SellerController {
       );
       return new ResponseWrapper(HttpStatus.OK, "Address update successful");
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        return new ResponseWrapper(HttpStatus.UNAUTHORIZED, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to update address"
-        );
-      }
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -269,14 +239,7 @@ export class SellerController {
       const user = await this.userService.getOneSeller(userId);
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
     } catch (error) {
-      if (error instanceof NotFoundException) {
-        return new ResponseWrapper(HttpStatus.NOT_FOUND, error.message);
-      } else {
-        return new ResponseWrapper(
-          HttpStatus.INTERNAL_SERVER_ERROR,
-          "Failed to retrieve user"
-        );
-      }
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -290,10 +253,7 @@ export class SellerController {
       const user = await this.userService.getOneSeller(req.user.id);
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -305,10 +265,7 @@ export class SellerController {
       const users = await this.userService.getAllSellers();
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -320,10 +277,7 @@ export class SellerController {
       const users = await this.userService.getUnverifiedSellers();
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Get("verified")
@@ -334,10 +288,7 @@ export class SellerController {
       const users = await this.userService.getVerifiedSellers();
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", users);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }

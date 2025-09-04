@@ -18,6 +18,7 @@ import { JwtLoginAuthGuard } from "src/auth/jwt/guards/jwt.guard";
 import { RoleGuard } from "src/auth/jwt/guards/roles.guard";
 import { Roles } from "src/auth/jwt/decorators/roles.decorator";
 import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("cart")
 export class CartController {
@@ -39,10 +40,7 @@ export class CartController {
         "Product added Succesfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Put("add/:productId")
@@ -58,10 +56,7 @@ export class CartController {
       await this.cartService.increaseQuantity(id, productId);
       return new ResponseWrapper(HttpStatus.OK, "Product Increase Succesfully");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Put("reduce/:productId")
@@ -80,10 +75,7 @@ export class CartController {
         "Product quantity decrease Succesfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -104,10 +96,7 @@ export class CartController {
         cart
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -122,10 +111,7 @@ export class CartController {
       await this.cartService.removeFromCart(req.user.id, productId);
       return new ResponseWrapper(HttpStatus.OK, "Product deleted Succesfully");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Delete("")
@@ -136,10 +122,7 @@ export class CartController {
       await this.cartService.clearCart(req.user.id);
       return new ResponseWrapper(HttpStatus.OK, "Cart deleted Succesfully");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }

@@ -18,6 +18,7 @@ import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
 import { CreateOrderDto } from "../dto/create-order.dto";
 import { PaymentService } from "../service/payment.service";
 import { PaymentStatus } from "../entity/payment.entity";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("payment")
 export class PaymentController {
@@ -38,10 +39,7 @@ export class PaymentController {
       const payment = await this.paymentService.getPaymentByOrderId(orderId);
       return new ResponseWrapper(HttpStatus.OK, "Payment detail retrieved", payment);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -61,10 +59,7 @@ export class PaymentController {
         "Point transaction created successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -83,10 +78,7 @@ export class PaymentController {
         "Cash transaction created successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -109,10 +101,7 @@ export class PaymentController {
 
       // console.log("Transaction: ", transaction);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Post("notification")
@@ -132,10 +121,7 @@ export class PaymentController {
       await this.paymentService.updatePaymentStatus(orderId, status);
       return new ResponseWrapper(HttpStatus.OK, "Payment status updated");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+     wrapAndThrowHttpException(error);
     }
   }
 }

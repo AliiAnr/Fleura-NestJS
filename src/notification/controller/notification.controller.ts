@@ -12,6 +12,7 @@ import { JwtLoginAuthGuard } from "src/auth/jwt/guards/jwt.guard";
 import { RoleGuard } from "src/auth/jwt/guards/roles.guard";
 import { Roles } from "src/auth/jwt/decorators/roles.decorator";
 import { ResponseWrapper } from "src/common/wrapper/response.wrapper";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("notification")
 export class NotificationController {
@@ -32,10 +33,7 @@ export class NotificationController {
         "Token saved successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Post("seller/save-token")
@@ -53,10 +51,7 @@ export class NotificationController {
         "Token saved successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+     wrapAndThrowHttpException(error);
     }
   }
 
@@ -75,10 +70,7 @@ export class NotificationController {
         "Notification sended successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -93,10 +85,7 @@ export class NotificationController {
         "Notification sended successfully"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }

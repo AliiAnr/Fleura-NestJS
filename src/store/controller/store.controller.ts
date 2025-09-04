@@ -23,6 +23,7 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { Multer } from "multer";
 import { UpdateStoreAddressDto } from "../dto/update.store-address.dto";
 import { Store } from "../entity/store.entity";
+import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
 @Controller("store")
 export class StoreController {
@@ -44,10 +45,7 @@ export class StoreController {
       );
       return new ResponseWrapper(HttpStatus.CREATED, "Store update successful");
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -60,7 +58,7 @@ export class StoreController {
     @UploadedFile() file: Multer.File,
     @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
-    const maxSize = 500 * 1024; // 500 KB
+    const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
       return new ResponseWrapper(
         HttpStatus.UNPROCESSABLE_ENTITY,
@@ -91,7 +89,7 @@ export class StoreController {
     @UploadedFile() file: Multer.File,
     @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
-    const maxSize = 500 * 1024; // 500 KB
+    const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
       return new ResponseWrapper(
         HttpStatus.UNPROCESSABLE_ENTITY,
@@ -107,10 +105,7 @@ export class StoreController {
         "Store logo upload successful"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -142,13 +137,7 @@ export class StoreController {
 
       return new ResponseWrapper(HttpStatus.OK, "Store address details", storeAddress);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(
-          error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-          error.message
-        ),
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   
@@ -180,13 +169,7 @@ export class StoreController {
 
       return new ResponseWrapper(HttpStatus.OK, "Store details", store);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(
-          error.status || HttpStatus.INTERNAL_SERVER_ERROR,
-          error.message
-        ),
-        error.status || HttpStatus.INTERNAL_SERVER_ERROR
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -198,10 +181,7 @@ export class StoreController {
       const store = await this.storeService.getAllStore();
       return new ResponseWrapper(HttpStatus.OK, "Store details", store);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Get("verified")
@@ -212,10 +192,7 @@ export class StoreController {
       const store = await this.storeService.getAllVerifiedStore();
       return new ResponseWrapper(HttpStatus.OK, "Store details", store);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
   @Get("unverified")
@@ -226,10 +203,7 @@ export class StoreController {
       const store = await this.storeService.getAllUnverifiedStore();
       return new ResponseWrapper(HttpStatus.OK, "Store details", store);
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 
@@ -252,10 +226,7 @@ export class StoreController {
         "Address update successful"
       );
     } catch (error) {
-      throw new HttpException(
-        new ResponseWrapper(error.status, error.message),
-        error.status
-      );
+      wrapAndThrowHttpException(error);
     }
   }
 }
