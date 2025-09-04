@@ -24,10 +24,10 @@ import { JwtLoginAuthGuard } from "src/auth/jwt/guards/jwt.guard";
 import { SellerService } from "../service/seller.service";
 import { RegisterSellerDto } from "../dto/register.seller.dto";
 import { UpdateSellerPartialDto } from "../dto/update.seller-partial.dto";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
 import { extname } from "path";
-import { Multer } from "multer";
+import { Multer, memoryStorage } from "multer";
 import { UpdateSellerAddressDto } from "../dto/update.seller-address.dto";
 import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 
@@ -141,12 +141,50 @@ export class SellerController {
   @Put("picture")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "admin")
-  @UseInterceptors(FileInterceptor("file"))
+  @UseInterceptors(
+    FileInterceptor("file",{
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        const allowed = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+          "image/gif",
+        ];
+        const ok = allowed.includes(file.mimetype);
+        if (!ok) {
+          (req as any).invalidFileType = true;
+        }
+        cb(null, ok);
+      },
+    })
+  )
   async uploadPicture(
     @Req() req: any,
     @UploadedFile() file: Multer.File,
     @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
+    // If any non-image was sent, reject the whole request
+    if ((req as any).invalidFileType) {
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "Only image files are allowed (jpeg, jpg, png, webp, gif)"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
+
+    if (!file || file.length === 0) {
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "No image files uploaded"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
     const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
       throw new HttpException(
@@ -169,12 +207,50 @@ export class SellerController {
   @Put("identity")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "admin")
-  @UseInterceptors(FileInterceptor("file"))
+  @UseInterceptors(
+    FileInterceptor("file",{
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        const allowed = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+          "image/gif",
+        ];
+        const ok = allowed.includes(file.mimetype);
+        if (!ok) {
+          (req as any).invalidFileType = true;
+        }
+        cb(null, ok);
+      },
+    })
+  )
   async uploadIdentity(
     @Req() req: any,
     @UploadedFile() file: Multer.File,
     @Query("userId") userId: string
   ): Promise<ResponseWrapper<any>> {
+    // If any non-image was sent, reject the whole request
+    if ((req as any).invalidFileType) {
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "Only image files are allowed (jpeg, jpg, png, webp, gif)"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
+
+    if (!file || file.length === 0) {
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "No image files uploaded"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
     const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
       throw new HttpException(

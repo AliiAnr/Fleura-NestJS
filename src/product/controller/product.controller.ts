@@ -168,7 +168,21 @@ export class ProductController {
   @Roles("seller", "admin")
   @UseInterceptors(
     FilesInterceptor("files", 10, {
-      storage: memoryStorage(), // Menggunakan memoryStorage untuk menyimpan file sementara di memori
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        const allowed = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+          "image/gif",
+        ];
+        const ok = allowed.includes(file.mimetype);
+        if (!ok) {
+          (req as any).invalidFileType = true;
+        }
+        cb(null, ok);
+      },
     })
   )
   async uploadPicture(
@@ -177,6 +191,26 @@ export class ProductController {
     @Body() request: { productId: string },
     @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
+    // If any non-image was sent, reject the whole request
+    if ((req as any).invalidFileType) {
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "Only image files are allowed (jpeg, jpg, png, webp, gif)"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
+
+    if (!files || files.length === 0) {
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "No image files uploaded"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
     const maxSize = 1 * 1024 * 1024; // 500 KB
     for (const f of files) {
       if (f.size > maxSize) {
