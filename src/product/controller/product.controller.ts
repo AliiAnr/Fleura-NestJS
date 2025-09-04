@@ -180,9 +180,12 @@ export class ProductController {
     const maxSize = 1 * 1024 * 1024; // 500 KB
     for (const f of files) {
       if (f.size > maxSize) {
-        return new ResponseWrapper(
-          HttpStatus.UNPROCESSABLE_ENTITY,
-          "File size exceeds the 500 KB limit"
+        throw new HttpException(
+          new ResponseWrapper(
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            "File size exceeds the 1 MB limit"
+          ),
+          HttpStatus.UNPROCESSABLE_ENTITY
         );
       }
     }

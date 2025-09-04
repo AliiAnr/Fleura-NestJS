@@ -60,9 +60,12 @@ export class StoreController {
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
-      return new ResponseWrapper(
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        "File size exceeds the 500 KB limit"
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "File size exceeds the 1 MB limit"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
       );
     }
 
@@ -91,9 +94,12 @@ export class StoreController {
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
-      return new ResponseWrapper(
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        "File size exceeds the 500 KB limit"
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "File size exceeds the 1 MB limit"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
       );
     }
 
@@ -111,7 +117,7 @@ export class StoreController {
 
   @Get("address")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
-  @Roles("buyer","seller", "admin")
+  @Roles("buyer", "seller", "admin")
   async getStoreAddress(
     @Req() req: any,
     @Query("storeId") storeId?: string
@@ -130,17 +136,23 @@ export class StoreController {
         storeAddress = await this.storeService.getStoreAddress(storeId);
       } else if (req.user.role === "seller") {
         // Jika seller, gunakan id dari req.user.id
-        storeAddress = await this.storeService.getStoreAddressBySellerId(req.user.id);
+        storeAddress = await this.storeService.getStoreAddressBySellerId(
+          req.user.id
+        );
       } else {
         throw new UnauthorizedException("Unauthorized role");
       }
 
-      return new ResponseWrapper(HttpStatus.OK, "Store address details", storeAddress);
+      return new ResponseWrapper(
+        HttpStatus.OK,
+        "Store address details",
+        storeAddress
+      );
     } catch (error) {
       wrapAndThrowHttpException(error);
     }
   }
-  
+
   @Get("detail")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "buyer", "admin")

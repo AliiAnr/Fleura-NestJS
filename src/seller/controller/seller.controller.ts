@@ -149,9 +149,12 @@ export class SellerController {
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
-      return new ResponseWrapper(
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        "File size exceeds the 500 KB limit"
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "File size exceeds the 1 MB limit"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
       );
     }
 
@@ -174,9 +177,12 @@ export class SellerController {
   ): Promise<ResponseWrapper<any>> {
     const maxSize = 1 * 1024 * 1024; // 500 KB
     if (file.size > maxSize) {
-      return new ResponseWrapper(
-        HttpStatus.UNPROCESSABLE_ENTITY,
-        "File size exceeds the 500 KB limit"
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "File size exceeds the 1 MB limit"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
       );
     }
 
@@ -246,9 +252,7 @@ export class SellerController {
   @Get("profile")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller")
-  async getUserProfile(
-    @Req() req: any
-  ): Promise<ResponseWrapper<any>> {
+  async getUserProfile(@Req() req: any): Promise<ResponseWrapper<any>> {
     try {
       const user = await this.userService.getOneSeller(req.user.id);
       return new ResponseWrapper(HttpStatus.OK, "User retrieved", user);
