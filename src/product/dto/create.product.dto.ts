@@ -1,31 +1,38 @@
-import { IsString, IsNumber, IsBoolean, IsOptional, IsUUID } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsBoolean,
+  IsOptional,
+  IsUUID,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 export class CreateProductDto {
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsNumber()
-    stock: number;
+  @Type(() => Number)
+  @IsNumber()
+  stock: number;
 
-    @IsNumber()
-    price: number;
+  @Type(() => Number)
+  @IsNumber()
+  price: number;
 
-    @IsOptional()
-    @IsBoolean()
-    pre_order?: boolean;
+  @IsOptional()
+  @IsBoolean()
+  pre_order?: boolean;
 
+  @IsString()
+  description?: string;
 
-    @IsString()
-    description?: string;
+  @IsString()
+  arrange_time?: string;
 
+  @Type(() => Number)
+  @IsNumber()
+  point: number;
 
-    @IsString()
-    arrange_time?: string;
-
-
-    @IsNumber()
-    point: number;
-
-    // @IsUUID()
-    // storeId: string;
+  // @IsUUID()
+  // storeId: string;
 }

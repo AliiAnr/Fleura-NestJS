@@ -60,14 +60,59 @@ export class ProductController {
   @Post("with-category")
   @UseGuards(JwtLoginAuthGuard, RoleGuard)
   @Roles("seller", "admin")
+  @UseInterceptors(
+    FilesInterceptor("files", 10, {
+      storage: memoryStorage(),
+      fileFilter: (req, file, cb) => {
+        const allowed = [
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+          "image/gif",
+        ];
+        const ok = allowed.includes(file.mimetype);
+        if (!ok) {
+          (req as any).invalidFileType = true;
+        }
+        cb(null, ok);
+      },
+    })
+  )
   async createProductWithCategory(
     @Req() req: any,
     @Body() request: CreateProductWithCategoryDto,
+    @UploadedFiles() files: Multer.File[],
     @Query("sellerId") sellerId: string
   ): Promise<ResponseWrapper<any>> {
+    if ((req as any).invalidFileType) {
+      throw new HttpException(
+        new ResponseWrapper(
+          HttpStatus.UNPROCESSABLE_ENTITY,
+          "Only image files are allowed (jpeg, jpg, png, webp, gif)"
+        ),
+        HttpStatus.UNPROCESSABLE_ENTITY
+      );
+    }
+
+    if (files && files.length > 0) {
+      const maxSize = 1 * 1024 * 1024;
+      for (const f of files) {
+        if (f.size > maxSize) {
+          throw new HttpException(
+            new ResponseWrapper(
+              HttpStatus.UNPROCESSABLE_ENTITY,
+              "File size exceeds the 1 MB limit"
+            ),
+            HttpStatus.UNPROCESSABLE_ENTITY
+          );
+        }
+      }
+    }
+
     try {
       const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
-      await this.productService.createProductWithCategory(id, request);
+      await this.productService.createProductWithCategory(id, request, files);
       return new ResponseWrapper(
         HttpStatus.CREATED,
         "Product created successfully"

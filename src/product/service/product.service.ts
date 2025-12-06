@@ -67,7 +67,8 @@ export class ProductService {
 
   async createProductWithCategory(
     userId: string,
-    request: CreateProductWithCategoryDto
+    request: CreateProductWithCategoryDto,
+    files?: Multer.File[]
   ): Promise<Product> {
     try {
       const store = await this.storeRepository.findOne({
@@ -91,7 +92,26 @@ export class ProductService {
         store,
         category,
       });
-      return await this.productRepository.save(product);
+      const savedProduct = await this.productRepository.save(product);
+
+      if (files && files.length > 0) {
+        const pictures = await Promise.all(
+          files.map(async (file) => {
+            const fileUrl = await this.supabaseService.uploadFile(
+              `product/picture/${savedProduct.id}`,
+              file
+            );
+            const picture = new ProductPicture();
+            picture.product = savedProduct;
+            picture.path = fileUrl;
+            return picture;
+          })
+        );
+        await this.productPictureRepository.save(pictures);
+        savedProduct.picture = pictures;
+      }
+
+      return savedProduct;
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
