@@ -31,6 +31,7 @@ import { Multer, memoryStorage } from "multer";
 import { DeletePictureDto } from "../dto/delete.picture.dto";
 import { UpdateProductCategoryDto } from "../dto/update-product-category.dto";
 import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
+import { CreateProductWithCategoryDto } from "../dto/create.product.with-category.dto";
 
 @Controller("product")
 export class ProductController {
@@ -47,6 +48,26 @@ export class ProductController {
     try {
       const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
       const product = await this.productService.createProduct(id, request);
+      return new ResponseWrapper(
+        HttpStatus.CREATED,
+        "Product created successfully"
+      );
+    } catch (error) {
+      wrapAndThrowHttpException(error);
+    }
+  }
+
+  @Post("with-category")
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin")
+  async createProductWithCategory(
+    @Req() req: any,
+    @Body() request: CreateProductWithCategoryDto,
+    @Query("sellerId") sellerId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
+      await this.productService.createProductWithCategory(id, request);
       return new ResponseWrapper(
         HttpStatus.CREATED,
         "Product created successfully"

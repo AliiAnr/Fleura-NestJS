@@ -20,6 +20,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ProductCategory } from "../entity/product-category.entity";
 import { SupabaseService } from "src/supabase/supabase.service";
 import { ProductReview } from "../entity/product-review.entity";
+import { CreateProductWithCategoryDto } from "../dto/create.product.with-category.dto";
 @Injectable()
 export class ProductService {
   constructor(
@@ -61,6 +62,43 @@ export class ProductService {
         throw error;
       }
       throw new InternalServerErrorException("Failed to create product.");
+    }
+  }
+
+  async createProductWithCategory(
+    userId: string,
+    request: CreateProductWithCategoryDto
+  ): Promise<Product> {
+    try {
+      const store = await this.storeRepository.findOne({
+        where: { sellerId: userId },
+      });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
+      }
+
+      const category = await this.productCategoryRepository.findOne({
+        where: { id: request.category_id },
+      });
+
+      if (!category) {
+        throw new UnauthorizedException("Category not Found");
+      }
+
+      const { category_id, ...productPayload } = request;
+      const product = this.productRepository.create({
+        ...productPayload,
+        store,
+        category,
+      });
+      return await this.productRepository.save(product);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        "Failed to create product with category."
+      );
     }
   }
 
