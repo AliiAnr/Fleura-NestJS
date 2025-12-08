@@ -52,6 +52,7 @@ export class ReviewService {
   ): Promise<ProductReview> {
     const product = await this.productRepository.findOne({
       where: { id: request.productId },
+      relations: ["store"],
     });
     if (!product) {
       throw new NotFoundException("Product not found");
@@ -83,11 +84,15 @@ export class ReviewService {
     try {
       const result = await this.productReviewRepository.save(review);
 
-      this.notificationService.sendNotificationBySellerId(
-        "Ulasan Baru",
-        `Pembeli ${buyer.name} telah memberikan ulasan pada produk ${product.name}`,
-        product.store.seller.id
-      );
+      try {
+        await this.notificationService.sendNotificationBySellerId(
+          "Ulasan Baru",
+          `Pembeli ${buyer.name} telah memberikan ulasan pada produk ${product.name}`,
+          product.store.sellerId
+        );
+      } catch (error) {
+        console.error("Failed to send review notification", error);
+      }
       // console.log(result);
       return result;
     } catch (error) {
