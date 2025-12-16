@@ -21,6 +21,7 @@ import { ProductCategory } from "../entity/product-category.entity";
 import { SupabaseService } from "src/supabase/supabase.service";
 import { ProductReview } from "../entity/product-review.entity";
 import { CreateProductWithCategoryDto } from "../dto/create.product.with-category.dto";
+import { UpdateProductWithCategoryDto } from "../dto/update.product.with-category.dto";
 @Injectable()
 export class ProductService {
   constructor(
@@ -141,25 +142,25 @@ export class ProductService {
       if (!product) {
         throw new UnauthorizedException("Product not Found");
       }
-      if (request.name) {
+      if (request.name !== undefined) {
         product.name = request.name;
       }
-      if (request.description) {
+      if (request.description !== undefined) {
         product.description = request.description;
       }
-      if (request.price) {
+      if (request.price !== undefined && request.price !== null) {
         product.price = request.price;
       }
-      if (request.stock) {
+      if (request.stock !== undefined && request.stock !== null) {
         product.stock = request.stock;
       }
       if (request.pre_order != null) {
         product.pre_order = request.pre_order;
       }
-      if (request.arrange_time) {
+      if (request.arrange_time !== undefined) {
         product.arrange_time = request.arrange_time;
       }
-      if (request.point) {
+      if (request.point !== undefined && request.point !== null) {
         product.point = request.point;
       }
 
@@ -167,6 +168,89 @@ export class ProductService {
       return product;
     } catch (error) {
       throw new UnauthorizedException("Failed to update product");
+    }
+  }
+
+  async updateProductWithCategory(
+    userId: string,
+    request: UpdateProductWithCategoryDto,
+    files?: Multer.File[]
+  ): Promise<Product> {
+    try {
+      const store = await this.storeRepository.findOne({
+        where: { sellerId: userId },
+      });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
+      }
+
+      const product = await this.productRepository.findOne({
+        where: { id: request.productId, store },
+        relations: ["picture", "category"],
+      });
+
+      if (!product) {
+        throw new UnauthorizedException("Product not Found");
+      }
+
+      if (request.name !== undefined) {
+        product.name = request.name;
+      }
+      if (request.description !== undefined) {
+        product.description = request.description;
+      }
+      if (request.price !== undefined && request.price !== null) {
+        product.price = request.price;
+      }
+      if (request.stock !== undefined && request.stock !== null) {
+        product.stock = request.stock;
+      }
+      if (request.pre_order != null) {
+        product.pre_order = request.pre_order;
+      }
+      if (request.arrange_time !== undefined) {
+        product.arrange_time = request.arrange_time;
+      }
+      if (request.point !== undefined && request.point !== null) {
+        product.point = request.point;
+      }
+
+      if (request.category_id) {
+        const category = await this.productCategoryRepository.findOne({
+          where: { id: request.category_id },
+        });
+
+        if (!category) {
+          throw new UnauthorizedException("Category not Found");
+        }
+        product.category = category;
+      }
+
+      if (files && files.length > 0) {
+        const pictures = await Promise.all(
+          files.map(async (file) => {
+            const fileUrl = await this.supabaseService.uploadFile(
+              `product/picture/${product.id}`,
+              file
+            );
+            const picture = new ProductPicture();
+            picture.product = product;
+            picture.path = fileUrl;
+            return picture;
+          })
+        );
+        const currentPictures = product.picture ?? [];
+        product.picture = [...currentPictures, ...pictures];
+      }
+
+      return await this.productRepository.save(product);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        "Failed to update product with category."
+      );
     }
   }
 
