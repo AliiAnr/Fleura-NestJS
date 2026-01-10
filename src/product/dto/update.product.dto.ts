@@ -26,6 +26,12 @@ export class UpdateProductDto {
   price: number;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === "") {
+      return undefined;
+    }
+    return value === true || value === "true";
+  })
   @IsBoolean()
   pre_order?: boolean;
 

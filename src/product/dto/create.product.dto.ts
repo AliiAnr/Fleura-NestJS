@@ -5,7 +5,7 @@ import {
   IsOptional,
   IsUUID,
 } from "class-validator";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 
 export class CreateProductDto {
   @IsString()
@@ -20,6 +20,12 @@ export class CreateProductDto {
   price: number;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === undefined || value === null || value === "") {
+      return undefined;
+    }
+    return value === true || value === "true";
+  })
   @IsBoolean()
   pre_order?: boolean;
 
