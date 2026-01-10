@@ -41,6 +41,33 @@ export class ProductService {
     private readonly supabaseService: SupabaseService
   ) {}
 
+  private getSupabaseFilePath(fileUrl: string): string | null {
+    const bucket = process.env.SUPABASE_BUCKET;
+    if (!bucket) {
+      return null;
+    }
+    const marker = `/storage/v1/object/public/${bucket}/`;
+    const index = fileUrl.indexOf(marker);
+    if (index === -1) {
+      return null;
+    }
+    return fileUrl.slice(index + marker.length);
+  }
+
+  private async cleanupSupabaseFiles(fileUrls: string[]): Promise<void> {
+    for (const fileUrl of fileUrls) {
+      const filePath = this.getSupabaseFilePath(fileUrl);
+      if (!filePath) {
+        continue;
+      }
+      try {
+        await this.supabaseService.deleteFile(filePath);
+      } catch (error) {
+        // Ignore cleanup failures to avoid masking the original error.
+      }
+    }
+  }
+
   async createProduct(
     userId: string,
     request: CreateProductDto
@@ -71,6 +98,7 @@ export class ProductService {
     request: CreateProductWithCategoryDto,
     files?: Multer.File[]
   ): Promise<Product> {
+    const uploadedFileUrls: string[] = [];
     try {
       const store = await this.storeRepository.findOne({
         where: { sellerId: userId },
@@ -88,32 +116,51 @@ export class ProductService {
       }
 
       const { category_id, ...productPayload } = request;
+      const productId = uuidv4();
       const product = this.productRepository.create({
+        id: productId,
         ...productPayload,
         store,
         category,
       });
-      const savedProduct = await this.productRepository.save(product);
+      const pictures: ProductPicture[] = [];
 
       if (files && files.length > 0) {
-        const pictures = await Promise.all(
-          files.map(async (file) => {
+        try {
+          for (const file of files) {
             const fileUrl = await this.supabaseService.uploadFile(
-              `product/picture/${savedProduct.id}`,
+              `product/picture/${productId}`,
               file
             );
+            uploadedFileUrls.push(fileUrl);
             const picture = new ProductPicture();
-            picture.product = savedProduct;
+            picture.product = product;
             picture.path = fileUrl;
-            return picture;
-          })
-        );
-        await this.productPictureRepository.save(pictures);
-        savedProduct.picture = pictures;
+            pictures.push(picture);
+          }
+        } catch (error) {
+          await this.cleanupSupabaseFiles(uploadedFileUrls);
+          uploadedFileUrls.length = 0;
+          throw error;
+        }
       }
 
-      return savedProduct;
+      await this.productRepository.manager.transaction(async (manager) => {
+        await manager.save(Product, product);
+        if (pictures.length > 0) {
+          await manager.save(ProductPicture, pictures);
+        }
+      });
+
+      if (pictures.length > 0) {
+        product.picture = pictures;
+      }
+
+      return product;
     } catch (error) {
+      if (uploadedFileUrls.length > 0) {
+        await this.cleanupSupabaseFiles(uploadedFileUrls);
+      }
       if (error instanceof UnauthorizedException) {
         throw error;
       }
@@ -254,6 +301,38 @@ export class ProductService {
     }
   }
 
+  async deleteProduct(userId: string, productId: string): Promise<void> {
+    try {
+      const store = await this.storeRepository.findOne({
+        where: { sellerId: userId },
+      });
+      if (!store) {
+        throw new UnauthorizedException("Store not Found");
+      }
+
+      const product = await this.productRepository.findOne({
+        where: { id: productId, store: store },
+        relations: ["picture"],
+      });
+
+      if (!product) {
+        throw new UnauthorizedException("Product not Found");
+      }
+
+      const pictureUrls = (product.picture ?? []).map((pic) => pic.path);
+      if (pictureUrls.length > 0) {
+        await this.cleanupSupabaseFiles(pictureUrls);
+      }
+
+      await this.productRepository.remove(product);
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new InternalServerErrorException("Failed to delete product");
+    }
+  }
+
   async DeletePictureById(
     productId: string,
     pictureId: string
@@ -272,12 +351,10 @@ export class ProductService {
         throw new UnauthorizedException("Picture not Found");
       }
 
-      // Hapus file dari Supabase
-      const filePath = picture.path.split(
-        `/storage/v1/object/public/${process.env.SUPABASE_BUCKET}/`
-      )[1];
-      // console.log(`File path to delete: ${filePath}`);
-      await this.supabaseService.deleteFile(filePath);
+      const filePath = this.getSupabaseFilePath(picture.path);
+      if (filePath) {
+        await this.supabaseService.deleteFile(filePath);
+      }
 
       // Hapus entri gambar dari produk
       product.picture = product.picture.filter((pic) => pic.id !== pictureId);
@@ -326,6 +403,7 @@ export class ProductService {
         })
       );
 
+      product.picture = product.picture ?? [];
       product.picture.push(...pictures); // Pastikan ini sesuai dengan relasi di entitas Product
       await this.productRepository.save(product);
       return product;

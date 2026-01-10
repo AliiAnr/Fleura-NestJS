@@ -29,6 +29,7 @@ import { UpdateProductDto } from "../dto/update.product.dto";
 import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { Multer, memoryStorage } from "multer";
 import { DeletePictureDto } from "../dto/delete.picture.dto";
+import { DeleteProductDto } from "../dto/delete.product.dto";
 import { UpdateProductCategoryDto } from "../dto/update-product-category.dto";
 import { wrapAndThrowHttpException } from "src/common/filters/wrap-throw-exception";
 import { CreateProductWithCategoryDto } from "../dto/create.product.with-category.dto";
@@ -265,10 +266,27 @@ export class ProductController {
       const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
       const product = await this.productService.updateProduct(
         id,
-        req.body.productId,
+        request.productId,
         request
       );
       return new ResponseWrapper(HttpStatus.OK, "Product updated successfully");
+    } catch (error) {
+      wrapAndThrowHttpException(error);
+    }
+  }
+
+  @Delete()
+  @UseGuards(JwtLoginAuthGuard, RoleGuard)
+  @Roles("seller", "admin")
+  async deleteProduct(
+    @Req() req: any,
+    @Body() request: DeleteProductDto,
+    @Query("sellerId") sellerId: string
+  ): Promise<ResponseWrapper<any>> {
+    try {
+      const id = req.user.role === "admin" && sellerId ? sellerId : req.user.id;
+      await this.productService.deleteProduct(id, request.product_id);
+      return new ResponseWrapper(HttpStatus.OK, "Product deleted successfully");
     } catch (error) {
       wrapAndThrowHttpException(error);
     }

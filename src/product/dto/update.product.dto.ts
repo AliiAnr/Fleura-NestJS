@@ -3,10 +3,11 @@ import {
   IsNumber,
   IsBoolean,
   IsOptional,
-  IsUUID,
 } from "class-validator";
+import { Transform, Type } from "class-transformer";
 
 export class UpdateProductDto {
+  @Transform(({ value, obj }) => value ?? obj.product_id)
   @IsString()
   productId: string;
 
@@ -15,10 +16,12 @@ export class UpdateProductDto {
   name: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   stock: number;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   price: number;
 
@@ -35,6 +38,7 @@ export class UpdateProductDto {
   arrange_time?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   point?: number;
 
