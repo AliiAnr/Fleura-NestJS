@@ -94,6 +94,7 @@ import { SellerToken } from "./notification/entity/seller-token.entity";
             pass: configService.get<string>("SMTP_PASS"),
           },
           debug: true,
+          logger: true,
         },
         defaults: {
           from: configService.get<string>("DEFAULT_FROM"),

@@ -3,6 +3,7 @@ import {
     Inject,
     Injectable,
     InternalServerErrorException,
+    Logger,
     NotFoundException,
   } from '@nestjs/common';
   import { InjectRepository } from '@nestjs/typeorm';
@@ -16,6 +17,8 @@ import { OtpBuyer } from '../entity/otp.buyer.entity';
   
   @Injectable()
   export class OtpBuyerService {
+    private readonly logger = new Logger(OtpBuyerService.name);
+
     constructor(
       private readonly mailerService: MailerService,
       @Inject('JwtForgotService') private readonly jwtForgotService: JwtService,
@@ -56,7 +59,17 @@ import { OtpBuyer } from '../entity/otp.buyer.entity';
   
         // Kembalikan entri OTP yang tersimpan (baru atau diperbarui)
       } catch (error) {
-        console.error('Error in generateOtp:', error);
+        const errorInfo = {
+          message: error?.message,
+          name: error?.name,
+          code: error?.code,
+          response: error?.response,
+          responseCode: error?.responseCode,
+        };
+        this.logger.error(
+          `Error in generateOtp: ${JSON.stringify(errorInfo)}`,
+          error?.stack,
+        );
   
         // Jika gagal kirim email, tangani error secara spesifik
         if (error.message.includes('Failed to send OTP email')) {
@@ -128,15 +141,26 @@ import { OtpBuyer } from '../entity/otp.buyer.entity';
     }
     private async sendOtpEmail(to: string, otp: string): Promise<void> {
       try {
+        this.logger.debug(`Sending OTP email to ${to} using template otp`);
         await this.mailerService.sendMail({
           to,
           subject: 'Your OTP Code',
           template: 'otp',
           context: { otp },
         });
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
-        // Log error jika perlu
+        const errorInfo = {
+          message: error?.message,
+          name: error?.name,
+          code: error?.code,
+          response: error?.response,
+          responseCode: error?.responseCode,
+          command: error?.command,
+        };
+        this.logger.error(
+          `sendOtpEmail failed for ${to}: ${JSON.stringify(errorInfo)}`,
+          error?.stack,
+        );
         throw new InternalServerErrorException('Could not send OTP email.');
       }
     }
