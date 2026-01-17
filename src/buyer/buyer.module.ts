@@ -5,7 +5,6 @@ import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Buyer } from "./entity/buyer.entity";
 import { OtpBuyer } from "src/auth/entity/otp.buyer.entity";
-import { MailerModule } from "@nestjs-modules/mailer";
 import { JwtLoginModule } from "src/auth/jwt/module/jwt.module";
 import { JwtForgotModule } from "src/auth/jwt/module/jwt-forgot.module";
 import { JwtLoginStrategy } from "src/auth/jwt/strategies/jwt.strategy";
@@ -25,7 +24,6 @@ import { BuyerToken } from "src/notification/entity/buyer-token.entity";
       Order,
       BuyerToken,
     ]),
-    MailerModule,
     JwtLoginModule,
     JwtForgotModule,
   ],

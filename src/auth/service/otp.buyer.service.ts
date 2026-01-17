@@ -6,21 +6,26 @@ import {
     Logger,
     NotFoundException,
   } from '@nestjs/common';
+  import { ConfigService } from '@nestjs/config';
   import { InjectRepository } from '@nestjs/typeorm';
   import { Repository } from 'typeorm';
   import * as crypto from 'crypto';
   import * as bcrypt from 'bcrypt';
-  import { MailerService } from '@nestjs-modules/mailer';
   import { JwtService } from '@nestjs/jwt';
+import axios from 'axios';
 import { Buyer } from 'src/buyer/entity/buyer.entity';
 import { OtpBuyer } from '../entity/otp.buyer.entity';
+import {
+  buildOtpEmailHtml,
+  buildOtpEmailText,
+} from './otp-email.template';
   
   @Injectable()
   export class OtpBuyerService {
     private readonly logger = new Logger(OtpBuyerService.name);
 
     constructor(
-      private readonly mailerService: MailerService,
+      private readonly configService: ConfigService,
       @Inject('JwtForgotService') private readonly jwtForgotService: JwtService,
       @InjectRepository(OtpBuyer) private readonly otpRepository: Repository<OtpBuyer>,
       @InjectRepository(Buyer) private readonly userRepository: Repository<Buyer>,
@@ -140,23 +145,49 @@ import { OtpBuyer } from '../entity/otp.buyer.entity';
       return access_token;
     }
     private async sendOtpEmail(to: string, otp: string): Promise<void> {
+      const apiKey = this.configService.get<string>('RESEND_API_KEY');
+      const from =
+        this.configService.get<string>('RESEND_FROM') ||
+        this.configService.get<string>('DEFAULT_FROM');
+      if (!apiKey || !from) {
+        this.logger.error(
+          'Resend configuration missing: RESEND_API_KEY or RESEND_FROM.',
+        );
+        throw new InternalServerErrorException('Email configuration missing.');
+      }
+
       try {
-        this.logger.debug(`Sending OTP email to ${to} using template otp`);
-        await this.mailerService.sendMail({
-          to,
-          subject: 'Your OTP Code',
-          template: 'otp',
-          context: { otp },
-        });
+        this.logger.debug(`Sending OTP email to ${to} using Resend`);
+        const response = await axios.post(
+          'https://api.resend.com/emails',
+          {
+            from,
+            to: [to],
+            subject: 'Your OTP Code',
+            html: buildOtpEmailHtml(otp),
+            text: buildOtpEmailText(otp),
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            timeout: 10000,
+          },
+        );
+        this.logger.debug(
+          `Resend accepted email: ${response.data?.id ?? response.status}`,
+        );
       } catch (error) {
-        const errorInfo = {
+        const errorInfo: Record<string, unknown> = {
           message: error?.message,
           name: error?.name,
           code: error?.code,
-          response: error?.response,
-          responseCode: error?.responseCode,
-          command: error?.command,
         };
+        if (axios.isAxiosError(error)) {
+          errorInfo.status = error.response?.status;
+          errorInfo.data = error.response?.data;
+        }
         this.logger.error(
           `sendOtpEmail failed for ${to}: ${JSON.stringify(errorInfo)}`,
           error?.stack,

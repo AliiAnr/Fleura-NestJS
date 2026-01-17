@@ -8,7 +8,6 @@ import { OtpSeller } from "src/auth/entity/otp.seller.entity";
 import { JwtLoginStrategy } from "src/auth/jwt/strategies/jwt.strategy";
 import { JwtForgotStrategy } from "src/auth/jwt/strategies/jwt-forgot.strategy";
 import { OtpSellerService } from "src/auth/service/otp.seller.service";
-import { MailerModule } from "@nestjs-modules/mailer";
 import { JwtLoginModule } from "src/auth/jwt/module/jwt.module";
 import { JwtForgotModule } from "src/auth/jwt/module/jwt-forgot.module";
 import { SellerAddress } from "./entity/seller.address.entity";
@@ -21,8 +20,6 @@ import { SellerToken } from "src/notification/entity/seller-token.entity";
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([Seller, OtpSeller,SellerAddress,Store, AdminSellerReview,SellerToken]),
-    // MailerModule,
-    MailerModule,
     JwtLoginModule,
     JwtForgotModule,
   ],
